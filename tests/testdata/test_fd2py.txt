@@ -1,0 +1,32 @@
+POST http://127.0.0.1:8080/prod-api/login HTTP/1.1
+Host: 127.0.0.1:8080
+Connection: keep-alive
+Content-Length: 43
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0
+Accept: application/json, text/plain, */*
+Content-Type: application/json;charset=UTF-8
+Content-Language: zh_CN
+isToken: false
+Origin: http://127.0.0.1:8080
+Referer: http://127.0.0.1:8080/login?redirect=%2Findex
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
+Cookie: rememberMe=true; username=KAM-XG; Admin-Token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJsb2dpblR5cGUiOiJsb2dpbiIsImxvZ2luSWQiOiLlhazlj7jotKblj7c6MTg3NjUxOTE1MDU2MjU2MjA0OSIsInJuU3RyIjoiY2VFQzlyeU9KNmcyODlMbVRrMTY0WnFFT1NTZUp5T0ciLCJ1c2VySWQiOjE4NzY1MTkxNTA1NjI1NjIwNDl9.n4bfVoYTL9XXYDj22ytiRo7ZN2vHdEyAoINMMpgkcKU; password=FiDYXHYvuE77Gb7kEgA7CkTCbUpsdvI9OSs0zAoTzm1prHJy+XdTOg9LwDdxyTPmrDcqMf+pqlV60+C2hlZosg==
+
+{"username":"KAM-XG","password":"88888888"}
+HTTP/1.1 200 OK
+Server: nginx/1.18.0
+Date: Mon, 24 Feb 2025 02:59:49 GMT
+Content-Type: application/json; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:8080
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Access-Control-Allow-Credentials: true
+
+4c
+{"code":500,"msg":"对不起, 您的账号：admin 不存在.","data":null}
+0
+
