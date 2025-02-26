@@ -57,8 +57,8 @@ class TestDB:
         db.execute("INSERT INTO users (name, age) VALUES ('Alice', 25);")
         db.execute("INSERT INTO users (name, age) VALUES ('Bob', 30);")
         # 执行多条sql语句
-        db.execute_file(file.join(TESTDATA_DIR, "sql_with_multi_statements.sql"))
-        
+        results = db.execute_file(file.join(TESTDATA_DIR, "sql_with_multi_statements.sql"))
+        assert results == [[('Alice', 25)], [('Bob', 30)], [('Alice', 25), ('Bob', 30)], []]
     def test_execute_statement_create_table_return_if_success(self, db):
         sql = "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);"
         result1 = db.execute(sql)

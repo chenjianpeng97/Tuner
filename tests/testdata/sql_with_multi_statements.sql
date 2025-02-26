@@ -13,3 +13,17 @@ FROM
     users
 WHERE
     name = 'Bob';
+
+SELECT
+    name,
+    age
+FROM
+    users;
+
+SELECT
+    name,
+    age
+FROM
+    users
+WHERE
+    name = 'Charlie';
