@@ -1,11 +1,17 @@
 """
 SQL API
+执行sql语句
+执行sql文件
+执行带参sql语句
+执行带参sql文件
 """
 
+import sqlparse
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 import os
 from typing import Union
+from tuner.logging.exceptions import SQLFileError
 
 
 class DataBase:
@@ -16,13 +22,13 @@ class DataBase:
         self.engine = create_engine(url)
         self.conn = None
 
-    def execute(self, sql: str) -> Union[int, bool, list]:
+    def execute(self, sql: str, params: dict = None) -> Union[int, bool, list]:
         """
         execute sql statement
         """
         with self.engine.connect() as conn:
             try:
-                result = conn.execute(text(sql))
+                result = conn.execute(text(sql), params)
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return False
@@ -36,21 +42,34 @@ class DataBase:
                 conn.commit()
                 return True
 
-    def execute_file(self, file_name: str, params: dict = None) -> bool:
+    def execute_file(self, file_name: str, params: dict = None) -> list:
         """
         excute sql file or excute sql file with params(:params as placeholder in *.sql file)
+        ilgal input:
+            1. multiple sql statements with params
+        legal input:
+            1. single sql statement without params
+            2. single sql statement with params
+            3. multiple sql statements without params
         """
-        try:
-            with self.engine.connect() as conn:
-                self.conn = conn
-                with open(file_name, "r") as file:
-                    sql = file.read()
-                    self.conn.execute(text(sql), params)
-                    self.conn.commit()
-                    return True
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return False
+        results = []
+        # 检查sql file合法性
+        if not os.path.isfile(file_name):
+            raise SQLFileError(f"SQL file {file_name} does not exist.")
+
+        with open(file_name, "r", encoding="utf-8") as file:
+            sql = file.read()
+            statements = sqlparse.split(sql)
+            for statement in statements:
+                if statement.strip():
+                    if params:
+                        result = self.execute(sql=str(statement), params=params)
+                        results.append(result)
+                    else:
+                        result = self.execute(sql=str(statement))
+                        results.append(result)
+            return results
+
     def close(self):
         if self.conn:
             self.conn.close()

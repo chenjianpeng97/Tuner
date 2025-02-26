@@ -40,17 +40,25 @@ def db():
 
 class TestDB:
 
-    def test_execute_file(self, db):
+    def test_execute_file_with_params(self, db):
         # 创建users表
         db.execute_file(file.join(TESTDATA_DIR, "create_table.sql"))
         params = {"name": "Alice", "age": 25}
+        # USAGE: :name as placeholder in sql file
         r = db.execute_file(file.join(TESTDATA_DIR, "sql_with_params.sql"), params)
-        assert r == 1
+        assert r[0] == 1
         result = db.execute("SELECT * FROM users WHERE name = 'Alice';")[0]
-        print("result ====== ")
         print(result)
         assert result == (1, "Alice", 25)
-
+    def test_excute_file_with_multi_statments(self,db):
+        # 创建users表
+        db.execute_file(file.join(TESTDATA_DIR, "create_table.sql"))
+        # 初始化数据
+        db.execute("INSERT INTO users (name, age) VALUES ('Alice', 25);")
+        db.execute("INSERT INTO users (name, age) VALUES ('Bob', 30);")
+        # 执行多条sql语句
+        db.execute_file(file.join(TESTDATA_DIR, "sql_with_multi_statements.sql"))
+        
     def test_execute_statement_create_table_return_if_success(self, db):
         sql = "CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);"
         result1 = db.execute(sql)
@@ -76,3 +84,10 @@ class TestDB:
             "INSERT INTO users (name, age) VALUES ('Alice', 25), ('Bob', 30);"
         )
         assert result1 == 2
+    def test_execute_statement_with_params(self,db):
+        db.execute("CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER);")
+        params = {"name": "Alice", "age": 25}
+        result = db.execute("INSERT INTO users (name, age) VALUES (:name, :age);", params)
+        assert result == 1
+        result = db.execute("SELECT * FROM users;")
+        assert result == [(1, "Alice", 25)]
