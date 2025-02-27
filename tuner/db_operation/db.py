@@ -11,13 +11,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 import os
 from typing import Union
-from tuner.logging.exceptions import SQLFileError
+from tuner.logging.exceptions import SQLFileError, DBConnectionError
 
 
 class DataBase:
     """SQL base API"""
 
     def __init__(self, url: str):
+        if not url:
+            raise DBConnectionError("Please provide a valid database url in config.py.")
         self.url = url
         self.engine = create_engine(url)
         self.conn = None

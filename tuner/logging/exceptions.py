@@ -28,4 +28,13 @@ class SQLFileError(TunerException):
     """
     输入了不支持的sql文件内容
     """
+
+    pass
+
+
+class DBConnectionError(TunerException):
+    """
+    数据库连接错误
+    """
+
     pass
