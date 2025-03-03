@@ -1,6 +1,6 @@
- 2025-03-03 14:20:15 | DEBUG    | test_log.py | MainThread | A debug message.
- 2025-03-03 14:20:15 | INFO     | test_log.py | MainThread | An info message.
- 2025-03-03 14:20:15 | SUCCESS  | test_log.py | MainThread | A success message.
- 2025-03-03 14:20:15 | WARNING  | test_log.py | MainThread | A warning message.
- 2025-03-03 14:20:15 | ERROR    | test_log.py | MainThread | An error message.
- 2025-03-03 14:20:15 | CRITICAL | test_log.py | MainThread | A critical message.
+ 2025-03-03 14:32:36 | DEBUG    | test_log.py | MainThread | A debug message.
+ 2025-03-03 14:32:36 | INFO     | test_log.py | MainThread | An info message.
+ 2025-03-03 14:32:36 | SUCCESS  | test_log.py | MainThread | A success message.
+ 2025-03-03 14:32:36 | WARNING  | test_log.py | MainThread | A warning message.
+ 2025-03-03 14:32:36 | ERROR    | test_log.py | MainThread | An error message.
+ 2025-03-03 14:32:36 | CRITICAL | test_log.py | MainThread | A critical message.

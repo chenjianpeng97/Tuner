@@ -1,7 +1,7 @@
 import sys
 import click
 import os
-from tuner.fiddler2python.fd2py import FidToPy
+from tuner.fd2py import FidToPy
 
 
 @click.group()

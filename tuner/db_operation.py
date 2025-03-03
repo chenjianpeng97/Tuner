@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 import os
 from typing import Union
-from tuner.logging.exceptions import SQLFileError, DBConnectionError
+from tuner.exceptions import SQLFileError, DBConnectionError
 
 
 class DataBase:

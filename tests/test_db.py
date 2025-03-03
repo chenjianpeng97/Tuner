@@ -1,7 +1,7 @@
 import os
 import pytest
 from sqlalchemy import create_engine, text
-from tuner.db_operation.db import DataBase
+from tuner.db_operation import DataBase
 from tuner.utils import file, retry
 import sys
 
