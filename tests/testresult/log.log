@@ -1,0 +1,13 @@
+ 2025-03-03 14:19:23 | INFO     | test_log.py | MainThread | d:\dev\project\Tuner\reports\tuner_log.log
+ 2025-03-03 14:19:23 | DEBUG    | test_log.py | MainThread | A debug message.
+ 2025-03-03 14:19:23 | INFO     | test_log.py | MainThread | An info message.
+ 2025-03-03 14:19:23 | SUCCESS  | test_log.py | MainThread | A success message.
+ 2025-03-03 14:19:23 | WARNING  | test_log.py | MainThread | A warning message.
+ 2025-03-03 14:19:23 | ERROR    | test_log.py | MainThread | An error message.
+ 2025-03-03 14:19:23 | CRITICAL | test_log.py | MainThread | A critical message.
+ 2025-03-03 14:20:00 | DEBUG    | test_log.py | MainThread | A debug message.
+ 2025-03-03 14:20:00 | INFO     | test_log.py | MainThread | An info message.
+ 2025-03-03 14:20:00 | SUCCESS  | test_log.py | MainThread | A success message.
+ 2025-03-03 14:20:00 | WARNING  | test_log.py | MainThread | A warning message.
+ 2025-03-03 14:20:00 | ERROR    | test_log.py | MainThread | An error message.
+ 2025-03-03 14:20:00 | CRITICAL | test_log.py | MainThread | A critical message.

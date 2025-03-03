@@ -1,23 +1,19 @@
 import pytest
-from tuner.logging.log import set_logger
+from tuner.logging import log, log_cfg
 from tuner.utils import file
-
-TESTRESULT_DIR = file.join(file.dir, "testresult")
-
-
-@pytest.fixture(scope="module")
-def logger():
-    # 初始化logger
-    logger = set_logger(file.join(TESTRESULT_DIR, "tuner_log.log"))
-    yield logger
+from tuner.config import LogConfig
 
 
-class TestLogger:
-    def test_logger(self, logger):
-        logger.trace("A trace message.")
-        logger.debug("A debug message.")
-        logger.info("An info message.")
-        logger.success("A success message.")
-        logger.warning("A warning message.")
-        logger.error("An error message.")
-        logger.critical("A critical message.")
+class TestLog:
+    def test_log(self):
+        # 测试结果放在test目录下的testresult中
+        TESTRESULT_DIR = file.dir
+        log.info(TESTRESULT_DIR)
+        log_cfg.set_logger_file_path(file.join(file.dir, "testresult", "log_test.log"))
+        log.trace("A trace message.")
+        log.debug("A debug message.")
+        log.info("An info message.")
+        log.success("A success message.")
+        log.warning("A warning message.")
+        log.error("An error message.")
+        log.critical("A critical message.")
