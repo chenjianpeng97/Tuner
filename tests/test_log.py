@@ -1,8 +1,6 @@
 import pytest
-from tuner.logging import log, log_cfg
+from tuner.log import log, log_cfg
 from tuner.utils import file
-from tuner.config import LogConfig
-
 
 class TestLog:
     def test_log(self):

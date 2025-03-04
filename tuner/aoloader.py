@@ -4,6 +4,8 @@ import ast
 import inspect
 import os
 import json
+from typing import Dict
+
 
 class APIObject:
     def __init__(self, module_path):
@@ -88,11 +90,34 @@ class APIObject:
                 data=updated_data,
                 json=updated_json,
             )
+        elif self.method == "PATCH":
+            response = requests.patch(
+                self.url,
+                headers=updated_headers,
+                params=updated_params,
+                data=updated_data,
+                json=updated_json,
+            )
         else:
             response = requests.get(
                 self.url, params=updated_params, headers=updated_headers
             )
 
+        return response
+
+    def replace(self, params=None, headers=None, data=None, json=None):
+
+        if params:
+            self.params = params
+        if headers:
+            self.headers = headers
+        if data:
+            self.data = data
+        if json:
+            self.json_data = json
+        response = requests.get(
+            self.url, params=updated_params, headers=updated_headers
+        )
         return response
 
     def send(self):
@@ -120,12 +145,20 @@ class APIObject:
                 data=self.data,
                 json=self.json_data,
             )
+        elif self.method == "PATCH":
+            response = requests.patch(
+                self.url,
+                headers=self.headers,
+                params=self.params,
+                data=self.data,
+                json=self.json_data,
+            )
         else:
             response = requests.get(self.url, params=self.params, headers=self.headers)
         return response
 
 
-def load_api_objects(api_dir):
+def load_api_objects(api_dir) -> Dict[str, APIObject]:
     api_objects = {}
     for root, _, files in os.walk(api_dir):
         for file in files:

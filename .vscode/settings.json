@@ -1,6 +1,7 @@
 {
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "--ignore=tests/testdata"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
