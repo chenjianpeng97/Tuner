@@ -13,5 +13,3 @@ headers = {
 
 response = requests.patch(url, params=params, headers=headers)
 print(response.json())
-assert response.json()["args"] == {"q1": "v1"}
-print(response.text)

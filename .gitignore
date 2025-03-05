@@ -2,3 +2,4 @@
 /dist
 /tuner.egg-info
 *.pyc
+*.log
