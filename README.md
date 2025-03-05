@@ -16,7 +16,9 @@
 - [ ] logging封装
     - [ ] requests发送后logging记录实际请求，实际返回
     - [ ] dboperation执行sql后，记录实际sql statement
-
+- [ ] reqscriptobject封装
+    - [x] 读取抓包生成的.py脚本,增删改查params payload headers等元素
+    - [ ] reqscripts目录放config.ini文件,批量设置接口auth信息
 ### 3. ......
 - [ ] ......
 - [ ] ......

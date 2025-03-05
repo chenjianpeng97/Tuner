@@ -18,7 +18,7 @@ class ReqScriptObject:
         self.headers = getattr(self.module, "headers", {})
         self.payload = getattr(self.module, "payload", None)
         self.method = self._detect_method(module_path).upper()  # 自动检测请求方法
-
+        self.auth = None
     def _detect_method(self, module_path):
         """
         使用 AST 自动检测 requests 调用方法，默认返回 "GET"
