@@ -1,5 +1,5 @@
 /build
 /dist
 /tuner.egg-info
-*.pyc
-*.log
+**/*.pyc
+**/*.log

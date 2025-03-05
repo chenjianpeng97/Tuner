@@ -25,3 +25,29 @@
 ### 4. 平台化
 - [ ] 类Cucumber Studio的平台化管理
     - [ ] 增加DSL名词提示
+
+
+## 使用方法
+### Request Script Object模式
+#### 已抓取的requests脚本存放目录如下
+```shell
+project/
+├── test_dir/
+│   ├── __init__.py
+│   └── login.py
+│   └── logout.py
+└── main.py
+```
+#### main中加载
+```python
+from tuner.rsloader import ReqScriptObject, load_api_objects
+# 加载所有requests脚本
+# 生成ReqScriptObject实例
+# 以api_objects[{{filename}}]访问
+api_objects = load_api_objects('./test_dir')
+login = api_objects['login']
+# 当要用不一样的username登录时
+responses = login.update(params={'username':'new_username'})
+# responses内容为以new_username登录,password与原脚本中参数一致
+assert responses.json()['status'] == 200
+```
