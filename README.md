@@ -4,5 +4,5 @@
 
 ## templates
 
-- frontend:[free-react-tailwind-admin-dashboard](https://github.com/TailAdmin/free-react-tailwind-admin-dashboard.git)
+- frontend:[shadcn-admin](https://github.com/satnaing/shadcn-admin.git)
 - backend:[fastapi-clean-example](https://github.com/ivan-borovets/fastapi-clean-example.git)
