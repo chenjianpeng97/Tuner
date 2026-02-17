@@ -19,6 +19,7 @@ Turn a raw requirement into a Gherkin feature tree that mirrors file system stru
 	- Each `.feature` file is treated as a folder.
 	- If a feature needs child requirements, create a folder named after the parent `.feature` file stem.
 	- Place child `.feature` files inside that folder.
+	- For auth/permission scenarios, place them in a sibling feature file inside the parent folder. Example: `features/user_management.feature` -> `features/user_management/user_management_auth.feature`.
 
 3. Extract business rules
 	- Convert constraints, permissions, and edge conditions into `Rule` blocks.
@@ -38,6 +39,7 @@ Turn a raw requirement into a Gherkin feature tree that mirrors file system stru
 - Prefer short, domain-specific step phrasing.
 - Use `Rule` when logic is more than a simple happy path.
 - Ensure the output is valid Gherkin for Behave.
+- Auth/permission-related scenarios must be written in a dedicated `*_auth.feature` file inside the parent feature folder (same level as the parent `.feature`).
 
 ## Output Contract
 
