@@ -1,5 +1,10 @@
 {
+    // Exclude the test/behave feature step files from Pylance/Pyright analysis
+    "python.analysis.ignore": [
+        "**/features/**"
+    ],
     "conventionalCommits.scopes": [
-        "AI"
+        "AI",
+        "FeatureFile"
     ]
 }
