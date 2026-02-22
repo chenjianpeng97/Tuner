@@ -1,10 +1,17 @@
 {
+    // Single root venv created by `uv sync` — all Python tools use this.
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+    // Let Pylance resolve ``from app.*`` imports used in features/
+    "python.analysis.extraPaths": [
+        "backend/src"
+    ],
+    "conventionalCommits.scopes": [
+        "AI",
+        "FeatureFile",
+        "account"
+    ],
     // Exclude the test/behave feature step files from Pylance/Pyright analysis
     "python.analysis.ignore": [
         "**/features/**"
     ],
-    "conventionalCommits.scopes": [
-        "AI",
-        "FeatureFile"
-    ]
 }
