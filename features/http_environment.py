@@ -8,6 +8,13 @@ Only presentation-layer dependencies are needed:
 
 The mocked interactors / handlers can be configured per-step via
 ``context.mocks`` (a :class:`mock_app.MockRegistry` instance).
+
+.. note::
+
+   ``app`` is installed as an **editable workspace package** by
+   ``uv sync`` at the monorepo root, so no ``sys.path`` manipulation
+   for ``backend/src`` is needed.  Only the ``features/`` directory
+   itself is appended so that ``mock_app`` can be imported by name.
 """
 
 from __future__ import annotations
@@ -16,16 +23,12 @@ import os
 import sys
 
 # ---------------------------------------------------------------------------
-# Make ``features/`` and ``backend/src`` importable so that both
-# ``mock_app`` and ``app.*`` modules can be resolved.
+# Ensure ``features/`` is importable so ``mock_app`` resolves by name.
+# ``app.*`` is already available via the editable workspace install.
 # ---------------------------------------------------------------------------
 _FEATURES_DIR = os.path.dirname(os.path.abspath(__file__))
-_BACKEND_SRC = os.path.normpath(
-    os.path.join(_FEATURES_DIR, "..", "backend", "src"),
-)
-for _p in (_FEATURES_DIR, _BACKEND_SRC):
-    if _p not in sys.path:
-        sys.path.insert(0, _p)
+if _FEATURES_DIR not in sys.path:
+    sys.path.insert(0, _FEATURES_DIR)
 
 from fastapi.testclient import TestClient  # noqa: E402
 

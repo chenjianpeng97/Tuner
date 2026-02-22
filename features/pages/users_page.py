@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from playwright.sync_api import Page, expect
+from test_config import SHORT_TIMEOUT_MS
 
 
 class UsersPage:
@@ -55,14 +56,16 @@ class UsersPage:
         self.add_user_button.click()
         expect(self.user_form).to_be_visible()
 
-    def fill_add_user(
-        self, username: str, password: str, role: str = "user"
-    ) -> None:
+    def fill_add_user(self, username: str, password: str, role: str = "user") -> None:
         """Fill the add-user dialog form fields."""
         self.user_form_username.fill(username)
         # Select role via the dropdown
         self._page.get_by_text("Select a role").click()
-        self._page.get_by_role("option", name=role, exact=True).click()
+        # The frontend shows role labels (e.g. 'User', 'Admin', 'Super Admin').
+        # Convert incoming role identifiers like 'user' or 'super_admin'
+        # into the UI label before matching to avoid case/underscore mismatches.
+        label = role.replace("_", " ").title()
+        self._page.get_by_role("option", name=label, exact=True).click()
         # Fill password fields inside the dialog
         password_fields = self.user_form.locator("input[type='password']")
         password_fields.nth(0).fill(password)
@@ -104,8 +107,8 @@ class UsersPage:
 
     def expect_success_toast(self, text: str = "success") -> None:
         toast = self._page.locator("[data-sonner-toast]").filter(has_text=text)
-        expect(toast).to_be_visible(timeout=5000)
+        expect(toast).to_be_visible(timeout=SHORT_TIMEOUT_MS)
 
     def expect_error_toast(self, text: str) -> None:
         toast = self._page.locator("[data-sonner-toast]").filter(has_text=text)
-        expect(toast).to_be_visible(timeout=5000)
+        expect(toast).to_be_visible(timeout=SHORT_TIMEOUT_MS)
