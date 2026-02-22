@@ -21,14 +21,21 @@ References to production code
 
 from __future__ import annotations
 
+import dataclasses
 import uuid
 from http import HTTPStatus
 
 from behave import given, then, when
 
+from app.application.commands.create_user import CreateUserResponse
+from app.domain.enums.user_role import UserRole
 from app.domain.exceptions.user import UsernameAlreadyExistsError
 from app.infrastructure.auth.exceptions import AuthenticationError
 from app.infrastructure.auth.handlers.constants import AUTH_ACCOUNT_INACTIVE
+from app.infrastructure.auth.handlers.log_in import LogInRequest
+from app.presentation.http.controllers.users.create_user import (
+    CreateUserRequestPydantic,
+)
 
 # ---------------------------------------------------------------------------
 # Expected HTTP status codes (from presentation-layer error_map)
@@ -89,11 +96,18 @@ def when_actor_creates_user(context, username):
             username,
         )
     else:
-        mocks.create_user.execute.return_value = {"id": uuid.uuid4()}
+        mocks.create_user.execute.return_value = CreateUserResponse(
+            id=uuid.uuid4(),
+        )
 
+    request_body = CreateUserRequestPydantic(
+        username=username,
+        password="testpass1",
+        role=UserRole.USER,
+    )
     context.response = context.client.post(
         API_USERS,
-        json={"username": username, "password": "testpass1", "role": "user"},
+        json=request_body.model_dump(mode="json"),
         cookies=AUTH_COOKIES,
     )
     context.current_username = username
@@ -116,9 +130,10 @@ def when_user_attempts_auth(context):
             AUTH_ACCOUNT_INACTIVE,
         )
 
+    request_body = LogInRequest(username=username, password="testpass1")
     context.response = context.client.post(
         API_LOGIN,
-        json={"username": username, "password": "testpass1"},
+        json=dataclasses.asdict(request_body),
     )
 
 
