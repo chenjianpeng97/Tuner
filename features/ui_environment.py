@@ -30,7 +30,7 @@ from playwright.sync_api import sync_playwright
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-FRONTEND_BASE_URL = os.environ.get("UI_BASE_URL", "http://localhost:5173")
+FRONTEND_BASE_URL = os.environ.get("UI_BASE_URL", "http://127.0.0.1:5173")
 HEADLESS = os.environ.get("UI_HEADLESS", "true").lower() in ("true", "1", "yes")
 SLOW_MO = int(os.environ.get("UI_SLOW_MO", "0"))
 
