@@ -208,4 +208,4 @@ __marimo__/
 
 # BDD testing screenshots
 features/screenshots/
-artifacts/screenshots/
+artifacts/
