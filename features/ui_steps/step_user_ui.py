@@ -26,6 +26,7 @@ from behave import given, then, when
 from pages.sign_in_page import SignInPage
 from pages.users_page import UsersPage
 from pages.nav_bar import NavBar
+from pages.notifications_page import NotificationsPage
 
 # Default password used when the feature file doesn't specify one.
 DEFAULT_PASSWORD = "testpass1"
@@ -76,8 +77,9 @@ def _create_user_via_ui(
     users = _users_page(context)
     users.create_user(username, password)
     # Wait for the success toast or capture failure state for debugging
-    success_toast = context.page.locator("[data-sonner-toast][data-type='success']")
-    error_toast = context.page.locator("[data-sonner-toast][data-type='error']")
+    notifications = NotificationsPage(context.page)
+    success_toast = notifications.locator(role="status", toast_type="success")
+    error_toast = notifications.locator(role="alert", toast_type="error")
     try:
         success_toast.first.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
     except Exception:
@@ -99,10 +101,25 @@ def _create_user_via_ui(
         except Exception:
             pass
 
-        # If an error toast is visible, raise with that text to help triage
+        # If an error toast is visible, inspect it. If it's a duplicate-user
+        # message treat the step as idempotent (user already exists) — this
+        # keeps the Given step stable when the test DB already contains the
+        # user. For other errors, fail and include artifacts.
         try:
             if error_toast.first.is_visible():
                 text = error_toast.first.inner_text()
+                if "already exists" in text:
+                    # Ensure the row is present and continue without raising.
+                    users.expect_user_row(username)
+                    # If the Add User dialog remained open (duplicate error),
+                    # close it so subsequent steps can interact normally.
+                    try:
+                        dialog_close = context.page.locator("[data-slot='dialog-close']")
+                        if dialog_close.first.is_visible():
+                            dialog_close.first.click()
+                    except Exception:
+                        pass
+                    return
                 raise AssertionError(f"Create user failed: error toast visible: {text}")
         except Exception:
             pass
@@ -139,8 +156,10 @@ def given_deactivated_user(context, username):
     users.click_row_action("Deactivate")
 
     # Wait for the deactivation success toast
-    toast = context.page.locator("[data-sonner-toast]").filter(has_text="deactivated")
-    toast.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
+    notifications = NotificationsPage(context.page)
+    notifications.wait_for_toast(
+        "deactivated", role="status", timeout=DEFAULT_TIMEOUT_MS
+    )
     context.current_username = username
 
 
@@ -226,21 +245,19 @@ def when_authorized_deactivates(context):
 @then('the request is rejected with a "user already exists" error')
 def then_request_rejected_duplicate(context):
     """Assert an error toast containing 'already exists' appears."""
-    # Scope to the notifications container and look for a toast that
-    # contains the substring "already exists". Use `.first.wait_for`
-    # to wait for a visible matching toast.
-    toast = context.page.locator(
-        'section[aria-label="Notifications alt+T"] [data-sonner-toast]'
-    ).filter(has_text="already exists")
-    toast.first.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
+    # Wait for an error toast that contains the substring "already exists".
+    notifications = NotificationsPage(context.page)
+    notifications.wait_for_toast(
+        "already exists", role="alert", timeout=DEFAULT_TIMEOUT_MS
+    )
 
 
 @then("the authentication is denied")
 def then_authentication_denied(context):
     """Assert an error toast appears and the user stays on sign-in."""
-    # The backend returns 401 with a message; the frontend shows it as a toast
-    toast = context.page.locator("[data-sonner-toast]")
-    toast.first.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
+    # The backend returns 401 with a message; the frontend shows it as an alert toast
+    notifications = NotificationsPage(context.page)
+    notifications.wait_for_toast(role="alert", timeout=DEFAULT_TIMEOUT_MS)
     # Verify we did NOT navigate away from sign-in
     assert "/sign-in" in context.page.url, (
         f"Expected to stay on /sign-in, but URL is {context.page.url}"
@@ -253,8 +270,8 @@ def then_user_becomes_active(context):
     username = context.current_username
 
     # Wait for the activation success toast
-    toast = context.page.locator("[data-sonner-toast]").filter(has_text="activated")
-    toast.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
+    notifications = NotificationsPage(context.page)
+    notifications.wait_for_toast("activated", role="status", timeout=DEFAULT_TIMEOUT_MS)
 
     # Verify status badge in the table row
     row = _users_page(context).user_row(username)
@@ -268,8 +285,10 @@ def then_user_becomes_deactivated(context):
     username = context.current_username
 
     # Wait for the deactivation success toast
-    toast = context.page.locator("[data-sonner-toast]").filter(has_text="deactivated")
-    toast.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
+    notifications = NotificationsPage(context.page)
+    notifications.wait_for_toast(
+        "deactivated", role="status", timeout=DEFAULT_TIMEOUT_MS
+    )
 
     # Verify status badge in the table row
     row = _users_page(context).user_row(username)

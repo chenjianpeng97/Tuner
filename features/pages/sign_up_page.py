@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from playwright.sync_api import Page, expect
 from test_config import SHORT_TIMEOUT_MS
+from pages.notifications_page import NotificationsPage
 
 
 class SignUpPage:
@@ -55,11 +56,11 @@ class SignUpPage:
         expect(self.form).to_be_visible()
 
     def expect_error_toast(self, text: str) -> None:
-        toast = self._page.locator("[data-sonner-toast]").filter(has_text=text)
-        expect(toast).to_be_visible(timeout=SHORT_TIMEOUT_MS)
+        notifications = NotificationsPage(self._page)
+        notifications.expect_toast(text, role="alert", timeout=SHORT_TIMEOUT_MS)
 
     def expect_success_toast(self) -> None:
-        toast = self._page.locator("[data-sonner-toast]").filter(
-            has_text="Account created"
+        notifications = NotificationsPage(self._page)
+        notifications.expect_toast(
+            "Account created", role="status", timeout=SHORT_TIMEOUT_MS
         )
-        expect(toast).to_be_visible(timeout=SHORT_TIMEOUT_MS)
