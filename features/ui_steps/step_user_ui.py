@@ -226,10 +226,13 @@ def when_authorized_deactivates(context):
 @then('the request is rejected with a "user already exists" error')
 def then_request_rejected_duplicate(context):
     """Assert an error toast containing 'already exists' appears."""
-    toast = context.page.locator("[data-sonner-toast]").filter(
-        has_text="already exists"
-    )
-    toast.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
+    # Scope to the notifications container and look for a toast that
+    # contains the substring "already exists". Use `.first.wait_for`
+    # to wait for a visible matching toast.
+    toast = context.page.locator(
+        'section[aria-label="Notifications alt+T"] [data-sonner-toast]'
+    ).filter(has_text="already exists")
+    toast.first.wait_for(state="visible", timeout=DEFAULT_TIMEOUT_MS)
 
 
 @then("the authentication is denied")
