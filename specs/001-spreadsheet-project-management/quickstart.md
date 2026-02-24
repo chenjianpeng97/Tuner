@@ -29,11 +29,16 @@ Validate feature delivery in two phases with constitution-aligned gates:
 2. Validate drill-down, requirement relationship maintenance, and asset/statistics behavior.
 3. Run stage-first validation:
    - `uv run behave --stage http ./features/requirement_templates/*.feature`
-   - `uv run pytest backend/tests -k requirement`
+   - `cd backend && uv run pytest tests/app/integration/test_requirement_drilldown_linking.py tests/app/integration/test_create_product_requirement.py tests/app/integration/test_requirement_statistics.py -q`
    - `uv run behave --stage ui ./features/user.feature` (or targeted preset UI scenarios)
 4. Gate check:
    - P2/P3 scenarios pass
    - Statistics and relationship behavior satisfy FR-010~FR-013 and SC-004/SC-005
+
+## Verified commands snapshot
+- `uv run behave --stage http ./features/requirement_templates/product_requirement_list_template.feature ./features/requirement_templates/unified_customer_requirement_template.feature`
+- `uv run behave --stage http ./features/requirement_templates/requirement_asset_management_template.feature ./features/requirement_templates/status_and_progress_template.feature`
+- `cd backend && APP_ENV=local uv run python scripts/gen_openapi.py`
 
 ## Contract Update Workflow
 When API behavior changes:

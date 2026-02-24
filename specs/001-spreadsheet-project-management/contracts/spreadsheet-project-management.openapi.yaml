@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Spreadsheet Project Management Contract (Planning Draft)
-  version: 0.1.0
+  title: Spreadsheet Project Management Contract
+  version: 1.0.0
   description: |
     Planning-stage contract for phased delivery:
     1) generic spreadsheet demo capability,
@@ -206,6 +206,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RequirementStatistics'
+  /projects/{project_id}/status-labels:
+    get:
+      summary: List project status labels
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Status label list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusLabelsResponse'
+    post:
+      summary: Upsert a project status label
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertStatusLabelRequest'
+      responses:
+        '200':
+          description: Updated status label list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusLabelsResponse'
 
 components:
   parameters:
@@ -307,33 +336,25 @@ components:
           additionalProperties: true
     CreateProductRequirementRequest:
       type: object
-      required: [content]
+      required: [title]
       properties:
-        module:
+        title:
           type: string
-        submodule:
+        description:
           type: string
-        level:
+        product_requirement_id:
           type: string
-        content:
+        table_id:
           type: string
     ProductRequirement:
       type: object
       properties:
-        id:
-          type: string
-        project_id:
-          type: string
         customer_requirement_id:
           type: string
-        module:
+        product_requirement_id:
           type: string
-        submodule:
-          type: string
-        level:
-          type: string
-        content:
-          type: string
+        association_created:
+          type: boolean
     RequirementStatistics:
       type: object
       properties:
@@ -350,3 +371,18 @@ components:
           type: integer
         product_requirement_count:
           type: integer
+    StatusLabelsResponse:
+      type: object
+      properties:
+        project_id:
+          type: string
+        labels:
+          type: array
+          items:
+            type: string
+    UpsertStatusLabelRequest:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string

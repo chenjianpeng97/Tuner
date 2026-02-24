@@ -379,6 +379,64 @@
                 ]
             }
         },
+        "/api/v1/demo/projects/{project_id}/plain-tables": {
+            "post": {
+                "tags": [
+                    "Demo"
+                ],
+                "summary": "Create plain online table without template",
+                "operationId": "create_plain_table_api_v1_demo_projects__project_id__plain_tables_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DemoCreatePlainTableRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DemoCreatePlainTableResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/health": {
             "get": {
                 "tags": [
@@ -398,6 +456,366 @@
                                     },
                                     "type": "object",
                                     "title": "Response Health Api V1 Health Get"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/requirements/presets/project-tracking:instantiate": {
+            "post": {
+                "tags": [
+                    "RequirementTemplates"
+                ],
+                "summary": "Instantiate project tracking preset",
+                "operationId": "instantiate_project_tracking_preset_api_v1_projects__project_id__requirements_presets_project_tracking_instantiate_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InstantiateRequirementPresetRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InstantiateRequirementPresetResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/customer-requirements/{customer_requirement_id}/drilldown": {
+            "post": {
+                "tags": [
+                    "RequirementTemplates"
+                ],
+                "summary": "Open drill-down context for customer requirement",
+                "operationId": "drilldown_requirement_api_v1_projects__project_id__customer_requirements__customer_requirement_id__drilldown_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    },
+                    {
+                        "name": "customer_requirement_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Customer Requirement Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DrilldownRequirementRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DrilldownRequirementResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/customer-requirements/{customer_requirement_id}/product-requirements": {
+            "post": {
+                "tags": [
+                    "RequirementTemplates"
+                ],
+                "summary": "Create product requirement in scoped context",
+                "operationId": "create_product_requirement_api_v1_projects__project_id__customer_requirements__customer_requirement_id__product_requirements_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    },
+                    {
+                        "name": "customer_requirement_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Customer Requirement Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateProductRequirementRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateProductRequirementResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/requirements/statistics": {
+            "get": {
+                "tags": [
+                    "RequirementStatistics"
+                ],
+                "summary": "Query requirement and asset statistics",
+                "operationId": "query_requirement_statistics_api_v1_projects__project_id__requirements_statistics_get",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    },
+                    {
+                        "name": "customer_requirement_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "Customer Requirement Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RequirementStatisticsResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/status-labels": {
+            "get": {
+                "tags": [
+                    "RequirementStatistics"
+                ],
+                "summary": "List project status labels",
+                "operationId": "list_status_labels_api_v1_projects__project_id__status_labels_get",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StatusLabelsResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "RequirementStatistics"
+                ],
+                "summary": "Upsert project status label",
+                "operationId": "upsert_status_label_api_v1_projects__project_id__status_labels_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpsertStatusLabelRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StatusLabelsResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
                                 }
                             }
                         }
@@ -2954,6 +3372,72 @@
                 ],
                 "title": "CopyAssetRequestPydantic"
             },
+            "CreateProductRequirementRequestPydantic": {
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "title": "Title"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description",
+                        "default": ""
+                    },
+                    "product_requirement_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Product Requirement Id"
+                    },
+                    "table_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Table Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "title"
+                ],
+                "title": "CreateProductRequirementRequestPydantic"
+            },
+            "CreateProductRequirementResponsePydantic": {
+                "properties": {
+                    "customer_requirement_id": {
+                        "type": "string",
+                        "title": "Customer Requirement Id"
+                    },
+                    "product_requirement_id": {
+                        "type": "string",
+                        "title": "Product Requirement Id"
+                    },
+                    "association_created": {
+                        "type": "boolean",
+                        "title": "Association Created"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "customer_requirement_id",
+                    "product_requirement_id",
+                    "association_created"
+                ],
+                "title": "CreateProductRequirementResponsePydantic"
+            },
             "CreateTableFromTemplateRequestPydantic": {
                 "properties": {
                     "template_key": {
@@ -3063,6 +3547,91 @@
                 ],
                 "title": "CreateViewRequestPydantic"
             },
+            "DemoCreatePlainTableRequestPydantic": {
+                "properties": {
+                    "table_name": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "title": "Table Name"
+                    },
+                    "columns": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "maxItems": 100,
+                        "title": "Columns"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "table_name"
+                ],
+                "title": "DemoCreatePlainTableRequestPydantic"
+            },
+            "DemoCreatePlainTableResponsePydantic": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Project Id"
+                    },
+                    "table_name": {
+                        "type": "string",
+                        "title": "Table Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message",
+                    "project_id",
+                    "table_name"
+                ],
+                "title": "DemoCreatePlainTableResponsePydantic"
+            },
+            "DrilldownRequirementRequestPydantic": {
+                "properties": {
+                    "labels": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Labels"
+                    }
+                },
+                "type": "object",
+                "title": "DrilldownRequirementRequestPydantic"
+            },
+            "DrilldownRequirementResponsePydantic": {
+                "properties": {
+                    "customer_requirement_id": {
+                        "type": "string",
+                        "title": "Customer Requirement Id"
+                    },
+                    "decomposition_allowed": {
+                        "type": "boolean",
+                        "title": "Decomposition Allowed"
+                    },
+                    "product_requirement_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Product Requirement Ids"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "customer_requirement_id",
+                    "decomposition_allowed"
+                ],
+                "title": "DrilldownRequirementResponsePydantic"
+            },
             "FollowMode": {
                 "type": "string",
                 "enum": [
@@ -3083,6 +3652,56 @@
                 },
                 "type": "object",
                 "title": "HTTPValidationError"
+            },
+            "InstantiateRequirementPresetRequestPydantic": {
+                "properties": {
+                    "template_key": {
+                        "$ref": "#/components/schemas/RequirementPresetKey",
+                        "default": "project_tracking_view"
+                    },
+                    "table_name": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "title": "Table Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "table_name"
+                ],
+                "title": "InstantiateRequirementPresetRequestPydantic"
+            },
+            "InstantiateRequirementPresetResponsePydantic": {
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Project Id"
+                    },
+                    "template_key": {
+                        "$ref": "#/components/schemas/RequirementPresetKey"
+                    },
+                    "spreadsheet_table_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Spreadsheet Table Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "project_id",
+                    "template_key",
+                    "spreadsheet_table_id"
+                ],
+                "title": "InstantiateRequirementPresetResponsePydantic"
             },
             "ListUsersQM": {
                 "properties": {
@@ -3152,6 +3771,58 @@
                 ],
                 "title": "ReorderColumnsRequestPydantic"
             },
+            "RequirementPresetKey": {
+                "type": "string",
+                "enum": [
+                    "project_tracking_view"
+                ],
+                "title": "RequirementPresetKey"
+            },
+            "RequirementStatisticsResponsePydantic": {
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "title": "Project Id"
+                    },
+                    "customer_requirement_id": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Customer Requirement Id"
+                    },
+                    "total_assets": {
+                        "type": "integer",
+                        "title": "Total Assets"
+                    },
+                    "linked_assets": {
+                        "type": "integer",
+                        "title": "Linked Assets"
+                    },
+                    "unlinked_assets": {
+                        "type": "integer",
+                        "title": "Unlinked Assets"
+                    },
+                    "product_requirement_count": {
+                        "type": "integer",
+                        "title": "Product Requirement Count"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "project_id",
+                    "customer_requirement_id",
+                    "total_assets",
+                    "linked_assets",
+                    "unlinked_assets",
+                    "product_requirement_count"
+                ],
+                "title": "RequirementStatisticsResponsePydantic"
+            },
             "SignUpRequest": {
                 "properties": {
                     "username": {
@@ -3204,6 +3875,27 @@
                     "DESC"
                 ],
                 "title": "SortingOrder"
+            },
+            "StatusLabelsResponsePydantic": {
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "title": "Project Id"
+                    },
+                    "labels": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Labels"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "project_id",
+                    "labels"
+                ],
+                "title": "StatusLabelsResponsePydantic"
             },
             "TableActivityLogsResponsePydantic": {
                 "properties": {
@@ -3866,6 +4558,19 @@
                     "title"
                 ],
                 "title": "UploadAssetRequestPydantic"
+            },
+            "UpsertStatusLabelRequestPydantic": {
+                "properties": {
+                    "label": {
+                        "type": "string",
+                        "title": "Label"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "label"
+                ],
+                "title": "UpsertStatusLabelRequestPydantic"
             },
             "UserQueryModel": {
                 "properties": {

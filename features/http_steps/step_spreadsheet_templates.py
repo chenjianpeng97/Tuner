@@ -7,7 +7,10 @@ from uuid import NAMESPACE_URL, UUID, uuid5
 from behave import given, then, use_step_matcher, when
 from pydantic import TypeAdapter
 
+from app.application.commands.spreadsheet_command import SpreadsheetCommandRequest
+from app.application.queries.spreadsheet_query import SpreadsheetQueryRequest
 from app.presentation.http.controllers.spreadsheets.schemas import (
+    AddRowRequestPydantic,
     AddColumnRequestPydantic,
     BatchOperationPydantic,
     BatchOperationType,
@@ -18,9 +21,12 @@ from app.presentation.http.controllers.spreadsheets.schemas import (
     CreateTableFromTemplateRequestPydantic,
     CreateViewRequestPydantic,
     FollowMode,
+    PlaceholderAcceptedResponsePydantic,
     ReorderColumnsRequestPydantic,
+    TableSummaryPydantic,
     TableTemplateDefinitionPydantic,
     TableTemplateKey,
+    TableViewResponsePydantic,
     TableViewSummaryPydantic,
     UpdateAssetFollowModeRequestPydantic,
     UpdateColumnRequestPydantic,
@@ -140,6 +146,15 @@ def _assert_expected_dispatch_called(context):
 
     assert matched_request is not None, (
         f"Expected dispatched operation '{expected['operation']}' on {interactor_name}."
+    )
+
+    expected_request_type = (
+        SpreadsheetQueryRequest
+        if expected["kind"] == "query"
+        else SpreadsheetCommandRequest
+    )
+    assert isinstance(matched_request, expected_request_type), (
+        f"Expected {expected_request_type.__name__}, got {type(matched_request).__name__}"
     )
 
     payload = getattr(matched_request, "payload", {})
@@ -933,8 +948,22 @@ def when_query_hierarchy_columns(context):
     state["last_query"]["hierarchy"] = state["response"].get(
         "hierarchy:P1", ["L1", "L2", "L3"]
     )
-    context.mocks.spreadsheet_query.execute.return_value = []
+    context.mocks.spreadsheet_query.execute.return_value = [
+        {
+            "id": str(_table_id("product_requirement_list")),
+            "project_id": str(_project_id("P1")),
+            "template_key": "product_requirement_list",
+            "table_name": "product_requirement_list",
+            "version": 1,
+            "etag": 'W/"1"',
+        }
+    ]
     _get(context, f"{API_SPREADSHEETS}/projects/{_project_id('P1')}/tables")
+    if context.response.status_code == HTTPStatus.OK:
+        parsed = TypeAdapter(list[TableSummaryPydantic]).validate_python(
+            context.response.json()
+        )
+        assert parsed and parsed[0].template_key.value == "product_requirement_list"
     _remember_expected_dispatch(
         context,
         "list_project_tables",
@@ -974,13 +1003,110 @@ def when_query_column_layout_metadata(context):
 @when(r"an actor queries product requirements in drill-down context")
 def when_query_pr_in_drilldown(context):
     state = _state(context)
-    state["last_query"]["drilldown_cr"] = state["active_customer_requirement"]
+    drilldown_cr = state["active_customer_requirement"]
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table": {
+            "id": str(_table_id("product_requirement_list")),
+            "project_id": str(_project_id("P1")),
+            "template_key": "product_requirement_list",
+            "table_name": "product_requirement_list",
+            "version": 1,
+            "etag": 'W/"1"',
+        },
+        "columns": [
+            {
+                "id": str(_id("col:customer_requirement_id")),
+                "key": "customer_requirement_id",
+                "title": "customer_requirement_id",
+                "data_type": "text",
+                "is_fixed": False,
+                "order": 1,
+                "hidden": False,
+                "options": [],
+                "property": {},
+            },
+            {
+                "id": str(_id("col:product_requirement_id")),
+                "key": "product_requirement_id",
+                "title": "product_requirement_id",
+                "data_type": "text",
+                "is_fixed": False,
+                "order": 2,
+                "hidden": False,
+                "options": [],
+                "property": {},
+            },
+        ],
+        "rows": [
+            {
+                "id": str(_row_id("PR-QUERY-1")),
+                "parent_row_id": None,
+                "order": 1,
+                "cells": [
+                    {
+                        "row_id": str(_row_id("PR-QUERY-1")),
+                        "column_key": "customer_requirement_id",
+                        "value": drilldown_cr,
+                        "display_value": None,
+                        "formula": None,
+                    },
+                    {
+                        "row_id": str(_row_id("PR-QUERY-1")),
+                        "column_key": "product_requirement_id",
+                        "value": "PR-QUERY-1",
+                        "display_value": None,
+                        "formula": None,
+                    },
+                ],
+            }
+        ],
+    }
+    _get(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('product_requirement_list')}",
+    )
+    if context.response.status_code == HTTPStatus.OK:
+        parsed = TypeAdapter(TableViewResponsePydantic).validate_python(
+            context.response.json()
+        )
+        state["last_query"]["drilldown_rows"] = parsed.rows
+    state["last_query"]["drilldown_cr"] = drilldown_cr
+    _remember_expected_dispatch(
+        context,
+        "get_table_view",
+        kind="query",
+        payload_subset={"table_id": _table_id("product_requirement_list")},
+    )
 
 
 @when(r'an actor creates product requirement "(?P<pr_id>[^"]+)" in current context')
 def when_create_product_requirement_in_context(context, pr_id):
     state = _state(context)
     cr_id = state["active_customer_requirement"]
+    request_data = AddRowRequestPydantic(
+        cells={
+            "product_requirement_id": pr_id,
+            "customer_requirement_id": cr_id,
+        }
+    )
+    payload = request_data.model_dump(mode="json")
+    context.mocks.spreadsheet_command.execute.return_value = {
+        "row_id": str(_row_id(pr_id))
+    }
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('product_requirement_list')}/rows",
+        payload,
+    )
+    _remember_expected_dispatch(
+        context,
+        "add_table_row",
+        kind="command",
+        payload_subset={
+            "table_id": _table_id("product_requirement_list"),
+            "request_data": payload,
+        },
+    )
     state["product_requirements"][pr_id] = {"project_id": "P1"}
     if cr_id:
         state["associations"].add((cr_id, pr_id))
@@ -1325,6 +1451,30 @@ def when_actor_adds_label(context, label, cr_id):
 def when_actor_requests_drill_down(context, cr_id):
     state = _state(context)
     labels = state["customer_requirements"].get(cr_id, {}).get("labels", set())
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table": {
+            "id": str(_table_id("product_requirement_list")),
+            "project_id": str(_project_id("P1")),
+            "template_key": "product_requirement_list",
+            "table_name": "product_requirement_list",
+            "version": 1,
+            "etag": 'W/"1"',
+        },
+        "columns": [],
+        "rows": [],
+    }
+    _get(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('product_requirement_list')}",
+    )
+    if context.response.status_code == HTTPStatus.OK:
+        TypeAdapter(TableViewResponsePydantic).validate_python(context.response.json())
+    _remember_expected_dispatch(
+        context,
+        "get_table_view",
+        kind="query",
+        payload_subset={"table_id": _table_id("product_requirement_list")},
+    )
     state["response"]["drill_down_allowed"] = "研发需求" in labels
 
 
@@ -1515,11 +1665,29 @@ def then_fields_fixed_left(context, f1, f2):
     r'all returned product requirements are associated with customer_requirement_id "(?P<cr_id>[^"]+)"'
 )
 def then_returned_pr_associated_with_customer_requirement(context, cr_id):
-    assert _state(context)["last_query"].get("drilldown_cr") == cr_id
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    state = _state(context)
+    assert state["last_query"].get("drilldown_cr") == cr_id
+    rows = state["last_query"].get("drilldown_rows", [])
+    assert rows, (
+        "Expected drill-down query to return at least one product requirement row"
+    )
+    for row in rows:
+        target_cells = [
+            cell for cell in row.cells if cell.column_key == "customer_requirement_id"
+        ]
+        assert target_cells and target_cells[0].value == cr_id
 
 
 @then(r'product requirement "(?P<pr_id>[^"]+)" is created')
 def then_product_requirement_created(context, pr_id):
+    _assert_pending_or_expected(context, HTTPStatus.ACCEPTED)
+    _assert_expected_dispatch_called(context)
+    parsed = TypeAdapter(PlaceholderAcceptedResponsePydantic).validate_python(
+        context.response.json()
+    )
+    assert parsed.message == "accepted"
     assert pr_id in _state(context)["product_requirements"]
 
 
@@ -1749,9 +1917,15 @@ def then_cr_treated_as_matter(context, cr_id):
 
 @then(r"the request is accepted and opens product requirement context")
 def then_request_accepted_for_drill_down(context):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    TypeAdapter(TableViewResponsePydantic).validate_python(context.response.json())
     assert _state(context)["response"].get("drill_down_allowed") is True
 
 
 @then(r"the request is rejected for unsupported decomposition type")
 def then_request_rejected_for_drill_down(context):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    TypeAdapter(TableViewResponsePydantic).validate_python(context.response.json())
     assert _state(context)["response"].get("drill_down_allowed") is False
