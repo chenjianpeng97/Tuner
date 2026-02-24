@@ -405,6 +405,1457 @@
                 }
             }
         },
+        "/api/v1/spreadsheets/table-templates": {
+            "get": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "List table templates",
+                "operationId": "list_table_templates_api_v1_spreadsheets_table_templates_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/TableTemplateDefinitionPydantic"
+                                    },
+                                    "type": "array",
+                                    "title": "Response List Table Templates Api V1 Spreadsheets Table Templates Get"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/spreadsheets/projects/{project_id}/tables": {
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Create table from template",
+                "operationId": "create_table_from_template_api_v1_spreadsheets_projects__project_id__tables_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateTableFromTemplateRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "List project tables",
+                "operationId": "list_project_tables_api_v1_spreadsheets_projects__project_id__tables_get",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 50,
+                            "title": "Limit"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0,
+                            "title": "Offset"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TableSummaryPydantic"
+                                    },
+                                    "title": "Response List Project Tables Api V1 Spreadsheets Projects  Project Id  Tables Get"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}": {
+            "get": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Get table view",
+                "operationId": "get_table_view_api_v1_spreadsheets_tables__table_id__get",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 200,
+                            "title": "Limit"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0,
+                            "title": "Offset"
+                        }
+                    },
+                    {
+                        "name": "view_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "format": "uuid"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ],
+                            "title": "View Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TableViewResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/columns": {
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Add table column",
+                "operationId": "add_table_column_api_v1_spreadsheets_tables__table_id__columns_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddColumnRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/columns/{column_key}": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Update table column by update mask",
+                "operationId": "update_table_column_api_v1_spreadsheets_tables__table_id__columns__column_key__patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    },
+                    {
+                        "name": "column_key",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Column Key"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateColumnRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Delete table column",
+                "operationId": "delete_table_column_api_v1_spreadsheets_tables__table_id__columns__column_key__delete",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    },
+                    {
+                        "name": "column_key",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "title": "Column Key"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/columns/order": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Reorder table columns",
+                "operationId": "reorder_table_columns_api_v1_spreadsheets_tables__table_id__columns_order_patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReorderColumnsRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/rows": {
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Add table row",
+                "operationId": "add_table_row_api_v1_spreadsheets_tables__table_id__rows_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AddRowRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/rows/{row_id}": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Update row by update mask",
+                "operationId": "update_table_row_api_v1_spreadsheets_tables__table_id__rows__row_id__patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    },
+                    {
+                        "name": "row_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Row Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateRowRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Delete table row",
+                "operationId": "delete_table_row_api_v1_spreadsheets_tables__table_id__rows__row_id__delete",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    },
+                    {
+                        "name": "row_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Row Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/rows:batch-upsert": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Batch upsert rows",
+                "operationId": "batch_upsert_rows_api_v1_spreadsheets_tables__table_id__rows_batch_upsert_patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchUpsertRowsRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/cells:batch-upsert": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Batch upsert cells",
+                "operationId": "batch_upsert_cells_api_v1_spreadsheets_tables__table_id__cells_batch_upsert_patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchUpsertCellsRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}:batch": {
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Execute table batch operations",
+                "operationId": "execute_table_batch_api_v1_spreadsheets_tables__table_id__batch_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BatchTableOperationsRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BatchTableOperationsResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/views": {
+            "get": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "List table views",
+                "operationId": "list_table_views_api_v1_spreadsheets_tables__table_id__views_get",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TableViewSummaryPydantic"
+                                    },
+                                    "title": "Response List Table Views Api V1 Spreadsheets Tables  Table Id  Views Get"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Create table view",
+                "operationId": "create_table_view_api_v1_spreadsheets_tables__table_id__views_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateViewRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/views/{view_id}": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Update table view",
+                "operationId": "update_table_view_api_v1_spreadsheets_views__view_id__patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "view_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "View Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateViewRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Delete table view",
+                "operationId": "delete_table_view_api_v1_spreadsheets_views__view_id__delete",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "view_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "View Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/projects/{project_id}/assets/upload": {
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Upload asset in project context",
+                "operationId": "upload_asset_api_v1_spreadsheets_projects__project_id__assets_upload_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UploadAssetRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/assets/{asset_id}/bind-cells": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Bind uploaded asset to table cells",
+                "operationId": "bind_asset_to_cells_api_v1_spreadsheets_assets__asset_id__bind_cells_patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Asset Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/BindAssetToCellsRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/assets/{asset_id}/copies": {
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Copy asset to another table row",
+                "operationId": "copy_asset_api_v1_spreadsheets_assets__asset_id__copies_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Asset Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CopyAssetRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/assets/{asset_id}/follow-mode": {
+            "patch": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Change asset follow mode",
+                "operationId": "change_asset_follow_mode_api_v1_spreadsheets_assets__asset_id__follow_mode_patch",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Asset Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateAssetFollowModeRequestPydantic"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/assets/{asset_id}/sync-from-parent": {
+            "post": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Sync copied asset from parent",
+                "operationId": "sync_asset_from_parent_api_v1_spreadsheets_assets__asset_id__sync_from_parent_post",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "asset_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Asset Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PlaceholderAcceptedResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/stats": {
+            "get": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Get table statistics",
+                "operationId": "get_table_stats_api_v1_spreadsheets_tables__table_id__stats_get",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TableStatsResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/spreadsheets/tables/{table_id}/activity-logs": {
+            "get": {
+                "tags": [
+                    "Spreadsheets"
+                ],
+                "summary": "Get table activity logs",
+                "operationId": "get_table_activity_logs_api_v1_spreadsheets_tables__table_id__activity_logs_get",
+                "security": [
+                    {
+                        "APIKeyCookie": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "table_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Table Id"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 100,
+                            "title": "Limit"
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0,
+                            "title": "Offset"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TableActivityLogsResponsePydantic"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users/": {
             "post": {
                 "tags": [
@@ -1050,6 +2501,334 @@
     },
     "components": {
         "schemas": {
+            "ActivityLogItemPydantic": {
+                "properties": {
+                    "at": {
+                        "type": "string",
+                        "title": "At"
+                    },
+                    "operator_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Operator Id"
+                    },
+                    "action": {
+                        "type": "string",
+                        "title": "Action"
+                    },
+                    "payload": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Payload"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "at",
+                    "operator_id",
+                    "action"
+                ],
+                "title": "ActivityLogItemPydantic"
+            },
+            "AddColumnRequestPydantic": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "title": "Key"
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "minLength": 1,
+                        "title": "Title"
+                    },
+                    "data_type": {
+                        "$ref": "#/components/schemas/ColumnDataType"
+                    },
+                    "property": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Property"
+                    },
+                    "validation": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/ColumnValidationPydantic"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "key",
+                    "title",
+                    "data_type"
+                ],
+                "title": "AddColumnRequestPydantic"
+            },
+            "AddRowRequestPydantic": {
+                "properties": {
+                    "parent_row_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Parent Row Id"
+                    },
+                    "cells": {
+                        "additionalProperties": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "number"
+                                },
+                                {
+                                    "type": "boolean"
+                                },
+                                {
+                                    "type": "null"
+                                }
+                            ]
+                        },
+                        "type": "object",
+                        "title": "Cells"
+                    }
+                },
+                "type": "object",
+                "title": "AddRowRequestPydantic"
+            },
+            "AssetType": {
+                "type": "string",
+                "enum": [
+                    "design",
+                    "test"
+                ],
+                "title": "AssetType"
+            },
+            "BatchOperationPydantic": {
+                "properties": {
+                    "operation_id": {
+                        "type": "string",
+                        "title": "Operation Id"
+                    },
+                    "operation_type": {
+                        "$ref": "#/components/schemas/BatchOperationType"
+                    },
+                    "payload": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Payload"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "operation_id",
+                    "operation_type"
+                ],
+                "title": "BatchOperationPydantic"
+            },
+            "BatchOperationResultPydantic": {
+                "properties": {
+                    "operation_id": {
+                        "type": "string",
+                        "title": "Operation Id"
+                    },
+                    "success": {
+                        "type": "boolean",
+                        "title": "Success"
+                    },
+                    "message": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Message"
+                    },
+                    "data": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Data"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "operation_id",
+                    "success"
+                ],
+                "title": "BatchOperationResultPydantic"
+            },
+            "BatchOperationType": {
+                "type": "string",
+                "enum": [
+                    "add_column",
+                    "update_column",
+                    "delete_column",
+                    "add_row",
+                    "update_row",
+                    "delete_row",
+                    "upsert_cell",
+                    "bind_asset"
+                ],
+                "title": "BatchOperationType"
+            },
+            "BatchTableOperationsRequestPydantic": {
+                "properties": {
+                    "operations": {
+                        "items": {
+                            "$ref": "#/components/schemas/BatchOperationPydantic"
+                        },
+                        "type": "array",
+                        "title": "Operations"
+                    },
+                    "atomic": {
+                        "type": "boolean",
+                        "title": "Atomic",
+                        "default": true
+                    },
+                    "dry_run": {
+                        "type": "boolean",
+                        "title": "Dry Run",
+                        "default": false
+                    },
+                    "idempotency_key": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Idempotency Key"
+                    },
+                    "expected_version": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Expected Version"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "operations"
+                ],
+                "title": "BatchTableOperationsRequestPydantic"
+            },
+            "BatchTableOperationsResponsePydantic": {
+                "properties": {
+                    "table_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Table Id"
+                    },
+                    "applied_version": {
+                        "type": "integer",
+                        "title": "Applied Version"
+                    },
+                    "results": {
+                        "items": {
+                            "$ref": "#/components/schemas/BatchOperationResultPydantic"
+                        },
+                        "type": "array",
+                        "title": "Results"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "table_id",
+                    "applied_version",
+                    "results"
+                ],
+                "title": "BatchTableOperationsResponsePydantic"
+            },
+            "BatchUpsertCellsRequestPydantic": {
+                "properties": {
+                    "cells": {
+                        "items": {
+                            "$ref": "#/components/schemas/TableCellPydantic"
+                        },
+                        "type": "array",
+                        "title": "Cells"
+                    },
+                    "expected_version": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Expected Version"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "cells"
+                ],
+                "title": "BatchUpsertCellsRequestPydantic"
+            },
+            "BatchUpsertRowsRequestPydantic": {
+                "properties": {
+                    "rows": {
+                        "items": {
+                            "$ref": "#/components/schemas/AddRowRequestPydantic"
+                        },
+                        "type": "array",
+                        "title": "Rows"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "rows"
+                ],
+                "title": "BatchUpsertRowsRequestPydantic"
+            },
+            "BindAssetToCellsRequestPydantic": {
+                "properties": {
+                    "table_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Table Id"
+                    },
+                    "cell_refs": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Cell Refs"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "table_id"
+                ],
+                "title": "BindAssetToCellsRequestPydantic"
+            },
             "Body_change_password_api_v1_account_password_put": {
                 "properties": {
                     "current_password": {
@@ -1067,6 +2846,139 @@
                     "new_password"
                 ],
                 "title": "Body_change_password_api_v1_account_password_put"
+            },
+            "ColumnDataType": {
+                "type": "string",
+                "enum": [
+                    "text",
+                    "number",
+                    "date",
+                    "select",
+                    "multi_select",
+                    "asset",
+                    "formula",
+                    "link",
+                    "lookup"
+                ],
+                "title": "ColumnDataType"
+            },
+            "ColumnOptionPydantic": {
+                "properties": {
+                    "key": {
+                        "type": "string",
+                        "title": "Key"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Label"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "key",
+                    "label"
+                ],
+                "title": "ColumnOptionPydantic"
+            },
+            "ColumnValidationPydantic": {
+                "properties": {
+                    "required": {
+                        "type": "boolean",
+                        "title": "Required",
+                        "default": false
+                    },
+                    "min_value": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Min Value"
+                    },
+                    "max_value": {
+                        "anyOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Max Value"
+                    },
+                    "regex": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Regex"
+                    }
+                },
+                "type": "object",
+                "title": "ColumnValidationPydantic"
+            },
+            "CopyAssetRequestPydantic": {
+                "properties": {
+                    "target_table_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Target Table Id"
+                    },
+                    "target_row_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Target Row Id"
+                    },
+                    "follow_mode": {
+                        "$ref": "#/components/schemas/FollowMode",
+                        "default": "follow"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "target_table_id"
+                ],
+                "title": "CopyAssetRequestPydantic"
+            },
+            "CreateTableFromTemplateRequestPydantic": {
+                "properties": {
+                    "template_key": {
+                        "$ref": "#/components/schemas/TableTemplateKey"
+                    },
+                    "table_name": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "title": "Table Name"
+                    },
+                    "level_names": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Level Names"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "template_key",
+                    "table_name"
+                ],
+                "title": "CreateTableFromTemplateRequestPydantic"
             },
             "CreateUserRequestPydantic": {
                 "properties": {
@@ -1104,6 +3016,60 @@
                     "id"
                 ],
                 "title": "CreateUserResponse"
+            },
+            "CreateViewRequestPydantic": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "title": "Name"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/ViewType",
+                        "default": "grid"
+                    },
+                    "frozen_columns": {
+                        "type": "integer",
+                        "title": "Frozen Columns",
+                        "default": 0
+                    },
+                    "hidden_column_keys": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Hidden Column Keys"
+                    },
+                    "filters": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Filters"
+                    },
+                    "sorts": {
+                        "items": {
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Sorts"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "title": "CreateViewRequestPydantic"
+            },
+            "FollowMode": {
+                "type": "string",
+                "enum": [
+                    "follow",
+                    "detached"
+                ],
+                "title": "FollowMode"
             },
             "HTTPValidationError": {
                 "properties": {
@@ -1157,6 +3123,35 @@
                 ],
                 "title": "LogInRequest"
             },
+            "PlaceholderAcceptedResponsePydantic": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "title": "Message"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "title": "PlaceholderAcceptedResponsePydantic"
+            },
+            "ReorderColumnsRequestPydantic": {
+                "properties": {
+                    "column_keys": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Column Keys"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "column_keys"
+                ],
+                "title": "ReorderColumnsRequestPydantic"
+            },
             "SignUpRequest": {
                 "properties": {
                     "username": {
@@ -1209,6 +3204,668 @@
                     "DESC"
                 ],
                 "title": "SortingOrder"
+            },
+            "TableActivityLogsResponsePydantic": {
+                "properties": {
+                    "table_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Table Id"
+                    },
+                    "logs": {
+                        "items": {
+                            "$ref": "#/components/schemas/ActivityLogItemPydantic"
+                        },
+                        "type": "array",
+                        "title": "Logs"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "table_id",
+                    "logs"
+                ],
+                "title": "TableActivityLogsResponsePydantic"
+            },
+            "TableCellPydantic": {
+                "properties": {
+                    "row_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Row Id"
+                    },
+                    "column_key": {
+                        "type": "string",
+                        "title": "Column Key"
+                    },
+                    "value": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Value"
+                    },
+                    "display_value": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Display Value"
+                    },
+                    "formula": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Formula"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "row_id",
+                    "column_key",
+                    "value"
+                ],
+                "title": "TableCellPydantic"
+            },
+            "TableColumnPydantic": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Id"
+                    },
+                    "key": {
+                        "type": "string",
+                        "title": "Key"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    },
+                    "data_type": {
+                        "$ref": "#/components/schemas/ColumnDataType"
+                    },
+                    "is_fixed": {
+                        "type": "boolean",
+                        "title": "Is Fixed"
+                    },
+                    "order": {
+                        "type": "integer",
+                        "title": "Order"
+                    },
+                    "hidden": {
+                        "type": "boolean",
+                        "title": "Hidden",
+                        "default": false
+                    },
+                    "formula": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Formula"
+                    },
+                    "options": {
+                        "items": {
+                            "$ref": "#/components/schemas/ColumnOptionPydantic"
+                        },
+                        "type": "array",
+                        "title": "Options"
+                    },
+                    "validation": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/ColumnValidationPydantic"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "property": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Property"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "key",
+                    "title",
+                    "data_type",
+                    "is_fixed",
+                    "order"
+                ],
+                "title": "TableColumnPydantic"
+            },
+            "TableRowPydantic": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Id"
+                    },
+                    "parent_row_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Parent Row Id"
+                    },
+                    "order": {
+                        "type": "integer",
+                        "title": "Order"
+                    },
+                    "cells": {
+                        "items": {
+                            "$ref": "#/components/schemas/TableCellPydantic"
+                        },
+                        "type": "array",
+                        "title": "Cells"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "parent_row_id",
+                    "order",
+                    "cells"
+                ],
+                "title": "TableRowPydantic"
+            },
+            "TableStatsResponsePydantic": {
+                "properties": {
+                    "table_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Table Id"
+                    },
+                    "row_count": {
+                        "type": "integer",
+                        "title": "Row Count"
+                    },
+                    "design_asset_count": {
+                        "type": "integer",
+                        "title": "Design Asset Count"
+                    },
+                    "test_asset_count": {
+                        "type": "integer",
+                        "title": "Test Asset Count"
+                    },
+                    "unlinked_design_asset_count": {
+                        "type": "integer",
+                        "title": "Unlinked Design Asset Count"
+                    },
+                    "unlinked_test_asset_count": {
+                        "type": "integer",
+                        "title": "Unlinked Test Asset Count"
+                    },
+                    "as_of_version": {
+                        "type": "integer",
+                        "title": "As Of Version"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "table_id",
+                    "row_count",
+                    "design_asset_count",
+                    "test_asset_count",
+                    "unlinked_design_asset_count",
+                    "unlinked_test_asset_count",
+                    "as_of_version"
+                ],
+                "title": "TableStatsResponsePydantic"
+            },
+            "TableSummaryPydantic": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Id"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Project Id"
+                    },
+                    "template_key": {
+                        "$ref": "#/components/schemas/TableTemplateKey"
+                    },
+                    "table_name": {
+                        "type": "string",
+                        "title": "Table Name"
+                    },
+                    "version": {
+                        "type": "integer",
+                        "title": "Version",
+                        "default": 1
+                    },
+                    "etag": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Etag"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "project_id",
+                    "template_key",
+                    "table_name"
+                ],
+                "title": "TableSummaryPydantic"
+            },
+            "TableTemplateDefinitionPydantic": {
+                "properties": {
+                    "key": {
+                        "$ref": "#/components/schemas/TableTemplateKey"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "description": {
+                        "type": "string",
+                        "title": "Description"
+                    },
+                    "fixed_columns": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Fixed Columns"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "key",
+                    "name",
+                    "description",
+                    "fixed_columns"
+                ],
+                "title": "TableTemplateDefinitionPydantic"
+            },
+            "TableTemplateKey": {
+                "type": "string",
+                "enum": [
+                    "project_tracking_view",
+                    "product_requirement_list"
+                ],
+                "title": "TableTemplateKey"
+            },
+            "TableViewResponsePydantic": {
+                "properties": {
+                    "table": {
+                        "$ref": "#/components/schemas/TableSummaryPydantic"
+                    },
+                    "columns": {
+                        "items": {
+                            "$ref": "#/components/schemas/TableColumnPydantic"
+                        },
+                        "type": "array",
+                        "title": "Columns"
+                    },
+                    "rows": {
+                        "items": {
+                            "$ref": "#/components/schemas/TableRowPydantic"
+                        },
+                        "type": "array",
+                        "title": "Rows"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "table",
+                    "columns",
+                    "rows"
+                ],
+                "title": "TableViewResponsePydantic"
+            },
+            "TableViewSummaryPydantic": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Id"
+                    },
+                    "table_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Table Id"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/ViewType",
+                        "default": "grid"
+                    },
+                    "frozen_columns": {
+                        "type": "integer",
+                        "title": "Frozen Columns",
+                        "default": 0
+                    },
+                    "hidden_column_keys": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Hidden Column Keys"
+                    },
+                    "filters": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Filters"
+                    },
+                    "sorts": {
+                        "items": {
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                            "type": "object"
+                        },
+                        "type": "array",
+                        "title": "Sorts"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "table_id",
+                    "name"
+                ],
+                "title": "TableViewSummaryPydantic"
+            },
+            "UpdateAssetFollowModeRequestPydantic": {
+                "properties": {
+                    "follow_mode": {
+                        "$ref": "#/components/schemas/FollowMode"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "follow_mode"
+                ],
+                "title": "UpdateAssetFollowModeRequestPydantic"
+            },
+            "UpdateColumnRequestPydantic": {
+                "properties": {
+                    "title": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 100,
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Title"
+                    },
+                    "hidden": {
+                        "anyOf": [
+                            {
+                                "type": "boolean"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Hidden"
+                    },
+                    "property": {
+                        "anyOf": [
+                            {
+                                "additionalProperties": true,
+                                "type": "object"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Property"
+                    },
+                    "validation": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/ColumnValidationPydantic"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "update_mask": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Update Mask"
+                    },
+                    "expected_version": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Expected Version"
+                    }
+                },
+                "type": "object",
+                "title": "UpdateColumnRequestPydantic"
+            },
+            "UpdateRowRequestPydantic": {
+                "properties": {
+                    "parent_row_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Parent Row Id"
+                    },
+                    "order": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Order"
+                    },
+                    "update_mask": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Update Mask"
+                    },
+                    "expected_version": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Expected Version"
+                    }
+                },
+                "type": "object",
+                "title": "UpdateRowRequestPydantic"
+            },
+            "UpdateViewRequestPydantic": {
+                "properties": {
+                    "name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 120,
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Name"
+                    },
+                    "frozen_columns": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Frozen Columns"
+                    },
+                    "hidden_column_keys": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Hidden Column Keys"
+                    },
+                    "filters": {
+                        "anyOf": [
+                            {
+                                "additionalProperties": true,
+                                "type": "object"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Filters"
+                    },
+                    "sorts": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    },
+                                    "type": "object"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Sorts"
+                    },
+                    "update_mask": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Update Mask"
+                    }
+                },
+                "type": "object",
+                "title": "UpdateViewRequestPydantic"
+            },
+            "UploadAssetRequestPydantic": {
+                "properties": {
+                    "asset_type": {
+                        "$ref": "#/components/schemas/AssetType"
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 200,
+                        "minLength": 1,
+                        "title": "Title"
+                    },
+                    "content": {
+                        "type": "string",
+                        "title": "Content",
+                        "default": ""
+                    },
+                    "tags": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Tags"
+                    },
+                    "idempotency_key": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Idempotency Key"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "asset_type",
+                    "title"
+                ],
+                "title": "UploadAssetRequestPydantic"
             },
             "UserQueryModel": {
                 "properties": {
@@ -1279,6 +3936,16 @@
                     "type"
                 ],
                 "title": "ValidationError"
+            },
+            "ViewType": {
+                "type": "string",
+                "enum": [
+                    "grid",
+                    "kanban",
+                    "gantt",
+                    "calendar"
+                ],
+                "title": "ViewType"
             }
         },
         "securitySchemes": {
