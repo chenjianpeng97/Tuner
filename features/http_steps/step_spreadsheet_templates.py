@@ -1,12 +1,152 @@
 from __future__ import annotations
 
 from datetime import datetime
-from types import SimpleNamespace
+from http import HTTPStatus
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from behave import given, then, use_step_matcher, when
+from pydantic import TypeAdapter
+
+from app.presentation.http.controllers.spreadsheets.schemas import (
+    AddColumnRequestPydantic,
+    BatchOperationPydantic,
+    BatchOperationType,
+    BatchTableOperationsRequestPydantic,
+    BindAssetToCellsRequestPydantic,
+    ColumnDataType,
+    CopyAssetRequestPydantic,
+    CreateTableFromTemplateRequestPydantic,
+    CreateViewRequestPydantic,
+    FollowMode,
+    ReorderColumnsRequestPydantic,
+    TableTemplateDefinitionPydantic,
+    TableTemplateKey,
+    TableViewSummaryPydantic,
+    UpdateAssetFollowModeRequestPydantic,
+    UpdateColumnRequestPydantic,
+    UpdateViewRequestPydantic,
+    UploadAssetRequestPydantic,
+    ViewType,
+)
 
 
 use_step_matcher("re")
+
+API_SPREADSHEETS = "/api/v1/spreadsheets"
+AUTH_COOKIES: dict[str, str] = {"access_token": "fake-test-token"}
+
+
+def _id(name: str) -> UUID:
+    return uuid5(NAMESPACE_URL, f"tuner:{name}")
+
+
+def _project_id(project_id: str) -> UUID:
+    return _id(f"project:{project_id}")
+
+
+def _table_id(table_id: str) -> UUID:
+    return _id(f"table:{table_id}")
+
+
+def _row_id(row_id: str) -> UUID:
+    return _id(f"row:{row_id}")
+
+
+def _view_id(view_id: str) -> UUID:
+    return _id(f"view:{view_id}")
+
+
+def _asset_id(asset_id: str) -> UUID:
+    return _id(f"asset:{asset_id}")
+
+
+def _resolve_template_key(template_key: str) -> TableTemplateKey:
+    alias_map = {
+        "generic_matrix": TableTemplateKey.PROJECT_TRACKING_VIEW,
+    }
+    if template_key in alias_map:
+        return alias_map[template_key]
+    return TableTemplateKey(template_key)
+
+
+def _post(context, path: str, body: dict):
+    context.response = context.client.post(path, json=body, cookies=AUTH_COOKIES)
+
+
+def _patch(context, path: str, body: dict):
+    context.response = context.client.patch(path, json=body, cookies=AUTH_COOKIES)
+
+
+def _get(context, path: str):
+    context.response = context.client.get(path, cookies=AUTH_COOKIES)
+
+
+def _delete(context, path: str):
+    context.response = context.client.delete(path, cookies=AUTH_COOKIES)
+
+
+def _assert_pending_or_expected(context, expected: int):
+    assert context.response is not None
+    assert context.response.status_code in {expected, HTTPStatus.NOT_IMPLEMENTED}, (
+        f"Expected {expected} or 501, got {context.response.status_code}: {context.response.text}"
+    )
+
+
+def _remember_expected_dispatch(
+    context,
+    operation: str,
+    *,
+    kind: str,
+    payload_subset: dict | None = None,
+):
+    state = _state(context)
+    state["expected_dispatch"] = {
+        "operation": operation,
+        "kind": kind,
+        "payload_subset": payload_subset or {},
+    }
+
+
+def _assert_expected_dispatch_called(context):
+    state = _state(context)
+    expected = state.get("expected_dispatch")
+    if not expected:
+        return
+
+    mocks = getattr(context, "mocks", None)
+    if mocks is None:
+        return
+
+    interactor_name = (
+        "spreadsheet_query" if expected["kind"] == "query" else "spreadsheet_command"
+    )
+    interactor = getattr(mocks, interactor_name, None)
+    assert interactor is not None, f"Missing mock interactor: {interactor_name}"
+
+    execute = getattr(interactor, "execute", None)
+    assert execute is not None, f"Mock interactor has no execute(): {interactor_name}"
+    assert execute.await_count > 0, (
+        f"Expected {interactor_name}.execute to be awaited at least once."
+    )
+
+    matched_request = None
+    for await_call in execute.await_args_list:
+        if not await_call.args:
+            continue
+        request_data = await_call.args[0]
+        if getattr(request_data, "operation", None) == expected["operation"]:
+            matched_request = request_data
+            break
+
+    assert matched_request is not None, (
+        f"Expected dispatched operation '{expected['operation']}' on {interactor_name}."
+    )
+
+    payload = getattr(matched_request, "payload", {})
+    for key, value in expected["payload_subset"].items():
+        assert payload.get(key) == value, (
+            f"Expected payload[{key!r}]={value!r}, got {payload.get(key)!r}"
+        )
 
 
 def _state(context):
@@ -31,6 +171,7 @@ def _state(context):
             "last_operator": None,
             "last_query": {},
             "response": {},
+            "expected_dispatch": None,
         }
     return context.sheet_state
 
@@ -388,6 +529,15 @@ def when_create_spreadsheet_table(context, project_id):
         _table_key(project_id, "T1"),
         {"project_id": project_id, "table_id": "T1", "columns": [], "version": 0},
     )
+    request_data = CreateTableFromTemplateRequestPydantic(
+        template_key=TableTemplateKey.PROJECT_TRACKING_VIEW,
+        table_name="T1",
+    )
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/projects/{_project_id(project_id)}/tables",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r"the actor creates a grid view on that table")
@@ -400,6 +550,12 @@ def when_create_grid_view(context):
         "sort": None,
         "hidden": set(),
     }
+    request_data = CreateViewRequestPydantic(name="V-grid", type=ViewType.GRID)
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('T1')}/views",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(
@@ -408,6 +564,16 @@ def when_create_grid_view(context):
 def when_create_spreadsheet_instance(context, project_id, template_key):
     state = _state(context)
     state["instantiated_templates"].setdefault(project_id, set()).add(template_key)
+    request_data = CreateTableFromTemplateRequestPydantic(
+        template_key=_resolve_template_key(template_key),
+        table_name=f"{template_key}-table",
+        level_names=state["response"].get("hierarchy_levels", ["L1", "L2", "L3"]),
+    )
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/projects/{_project_id(project_id)}/tables",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(
@@ -421,6 +587,18 @@ def when_upload_asset(context, asset_name, project_id):
         "follow": None,
         "detached": False,
     }
+    request_data = UploadAssetRequestPydantic(asset_type="design", title=asset_name)
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/projects/{_project_id(project_id)}/assets/upload",
+        request_data.model_dump(mode="json"),
+    )
+    _remember_expected_dispatch(
+        context,
+        "upload_asset",
+        kind="command",
+        payload_subset={"project_id": _project_id(project_id)},
+    )
 
 
 @when(
@@ -428,6 +606,15 @@ def when_upload_asset(context, asset_name, project_id):
 )
 def when_bind_asset(context, asset_id, table_id, row_id, column):
     _state(context)["asset_bindings"].add((asset_id, table_id, row_id, column))
+    request_data = BindAssetToCellsRequestPydantic(
+        table_id=_table_id(table_id),
+        cell_refs=[f"{row_id}:{column}"],
+    )
+    _patch(
+        context,
+        f"{API_SPREADSHEETS}/assets/{_asset_id(asset_id)}/bind-cells",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(
@@ -441,6 +628,16 @@ def when_copy_asset_follow_mode(context, parent, child):
         "follow": parent,
         "detached": False,
     }
+    request_data = CopyAssetRequestPydantic(
+        target_table_id=_table_id("T1"),
+        target_row_id=_row_id("R1"),
+        follow_mode=FollowMode.FOLLOW,
+    )
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/assets/{_asset_id(parent)}/copies",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r'the actor detaches "(?P<asset_id>[^"]+)" from follow mode')
@@ -449,12 +646,34 @@ def when_detach_asset_follow_mode(context, asset_id):
     if asset_id in state["assets"]:
         state["assets"][asset_id]["detached"] = True
         state["assets"][asset_id]["follow"] = None
+    request_data = UpdateAssetFollowModeRequestPydantic(follow_mode=FollowMode.DETACHED)
+    _patch(
+        context,
+        f"{API_SPREADSHEETS}/assets/{_asset_id(asset_id)}/follow-mode",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r"an actor queries project-level asset statistics")
 def when_query_project_asset_statistics(context):
     state = _state(context)
     state["last_query"]["project_asset_stats"] = True
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table_id": str(_table_id("T1")),
+        "row_count": 0,
+        "design_asset_count": 0,
+        "test_asset_count": 0,
+        "unlinked_design_asset_count": 1,
+        "unlinked_test_asset_count": 0,
+        "as_of_version": 1,
+    }
+    _get(context, f"{API_SPREADSHEETS}/tables/{_table_id('T1')}/stats")
+    _remember_expected_dispatch(
+        context,
+        "get_table_stats",
+        kind="query",
+        payload_subset={"table_id": _table_id("T1")},
+    )
 
 
 @when(
@@ -477,6 +696,21 @@ def when_submit_batch_with_idempotency(context, idem_key):
     state = _state(context)
     state["idempotency"][idem_key] = {"result": "applied"}
     state["last_query"]["idempotency_last"] = "first"
+    request_data = BatchTableOperationsRequestPydantic(
+        operations=[
+            BatchOperationPydantic(
+                operation_id="op-1",
+                operation_type=BatchOperationType.ADD_ROW,
+                payload={"cells": {"需求": "text"}},
+            )
+        ],
+        idempotency_key=idem_key,
+    )
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('T1')}:batch",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(
@@ -494,6 +728,16 @@ def when_add_column(context, column):
     table = next(iter(state["tables"].values()), None)
     if table is not None and column not in table["columns"]:
         table["columns"].append(column)
+    request_data = AddColumnRequestPydantic(
+        key=column,
+        title=column,
+        data_type=ColumnDataType.TEXT,
+    )
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('T1')}/columns",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r'the actor moves column "(?P<column>[^"]+)" before column "(?P<target>[^"]+)"')
@@ -506,6 +750,12 @@ def when_move_column(context, column, target):
     if column in cols and target in cols:
         cols.remove(column)
         cols.insert(cols.index(target), column)
+    request_data = ReorderColumnsRequestPydantic(column_keys=cols)
+    _patch(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('T1')}/columns/order",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r'the actor renames column "(?P<source>[^"]+)" to "(?P<target>[^"]+)"')
@@ -517,6 +767,15 @@ def when_rename_column(context, source, target):
     cols = table["columns"]
     if source in cols:
         cols[cols.index(source)] = target
+    request_data = UpdateColumnRequestPydantic(
+        title=target,
+        update_mask=["title"],
+    )
+    _patch(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('T1')}/columns/{source}",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r"an actor submits a structure batch with operations:")
@@ -561,6 +820,12 @@ def when_create_view(context, view_id, view_type):
         "sort": None,
         "hidden": set(),
     }
+    request_data = CreateViewRequestPydantic(name=view_id, type=ViewType(view_type))
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('T1')}/views",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r'the actor configures filter "(?P<filter_text>[^"]+)"')
@@ -568,6 +833,14 @@ def when_configure_filter(context, filter_text):
     state = _state(context)
     if "V-kanban" in state["views"]:
         state["views"]["V-kanban"]["filter"] = filter_text
+    request_data = UpdateViewRequestPydantic(
+        filters={"expr": filter_text}, update_mask=["filters"]
+    )
+    _patch(
+        context,
+        f"{API_SPREADSHEETS}/views/{_view_id('V-kanban')}",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r'the actor configures sort "(?P<sort_text>[^"]+)"')
@@ -575,6 +848,15 @@ def when_configure_sort(context, sort_text):
     state = _state(context)
     if "V-kanban" in state["views"]:
         state["views"]["V-kanban"]["sort"] = sort_text
+    request_data = UpdateViewRequestPydantic(
+        sorts=[{"expr": sort_text}],
+        update_mask=["sorts"],
+    )
+    _patch(
+        context,
+        f"{API_SPREADSHEETS}/views/{_view_id('V-kanban')}",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r'the actor hides column "(?P<column>[^"]+)"')
@@ -582,14 +864,40 @@ def when_hide_column(context, column):
     state = _state(context)
     if "V-kanban" in state["views"]:
         state["views"]["V-kanban"]["hidden"].add(column)
+    request_data = UpdateViewRequestPydantic(
+        hidden_column_keys=[column],
+        update_mask=["hidden_column_keys"],
+    )
+    _patch(
+        context,
+        f"{API_SPREADSHEETS}/views/{_view_id('V-kanban')}",
+        request_data.model_dump(mode="json"),
+    )
 
 
 @when(r"an actor queries available requirement templates")
 def when_query_requirement_templates(context):
-    _state(context)["response"]["templates"] = {
-        "project_tracking_view",
-        "product_requirement_list",
-    }
+    context.mocks.spreadsheet_query.execute.return_value = [
+        {
+            "key": "project_tracking_view",
+            "name": "项目跟踪视图",
+            "description": "template",
+            "fixed_columns": ["客户需求", "设计资产", "测试资产"],
+        },
+        {
+            "key": "product_requirement_list",
+            "name": "产品需求列表",
+            "description": "template",
+            "fixed_columns": ["产品模块", "子模块", "L1"],
+        },
+    ]
+    _get(context, f"{API_SPREADSHEETS}/table-templates")
+    _remember_expected_dispatch(context, "list_table_templates", kind="query")
+    if context.response.status_code == HTTPStatus.OK:
+        parsed = TypeAdapter(list[TableTemplateDefinitionPydantic]).validate_python(
+            context.response.json()
+        )
+        _state(context)["response"]["templates"] = {item.key.value for item in parsed}
 
 
 @when(
@@ -601,6 +909,22 @@ def when_instantiate_template(context, template_key, project_id):
     state["response"]["instantiated_hierarchy"] = state["response"].get(
         "hierarchy_levels", ["L1", "L2", "L3"]
     )
+    request_data = CreateTableFromTemplateRequestPydantic(
+        template_key=_resolve_template_key(template_key),
+        table_name=f"{template_key}-instance",
+        level_names=state["response"]["instantiated_hierarchy"],
+    )
+    _post(
+        context,
+        f"{API_SPREADSHEETS}/projects/{_project_id(project_id)}/tables",
+        request_data.model_dump(mode="json"),
+    )
+    _remember_expected_dispatch(
+        context,
+        "create_table_from_template",
+        kind="command",
+        payload_subset={"project_id": _project_id(project_id)},
+    )
 
 
 @when(r"an actor queries hierarchy columns")
@@ -608,6 +932,14 @@ def when_query_hierarchy_columns(context):
     state = _state(context)
     state["last_query"]["hierarchy"] = state["response"].get(
         "hierarchy:P1", ["L1", "L2", "L3"]
+    )
+    context.mocks.spreadsheet_query.execute.return_value = []
+    _get(context, f"{API_SPREADSHEETS}/projects/{_project_id('P1')}/tables")
+    _remember_expected_dispatch(
+        context,
+        "list_project_tables",
+        kind="query",
+        payload_subset={"project_id": _project_id("P1")},
     )
 
 
@@ -622,6 +954,21 @@ def when_update_template_columns(context):
 @when(r"an actor queries column layout metadata")
 def when_query_column_layout_metadata(context):
     _state(context)["last_query"]["fixed_left"] = {"模块", "子模块"}
+    context.mocks.spreadsheet_query.execute.return_value = []
+    _get(
+        context,
+        f"{API_SPREADSHEETS}/tables/{_table_id('product_requirement_list')}/views",
+    )
+    if context.response.status_code == HTTPStatus.OK:
+        TypeAdapter(list[TableViewSummaryPydantic]).validate_python(
+            context.response.json()
+        )
+    _remember_expected_dispatch(
+        context,
+        "list_table_views",
+        kind="query",
+        payload_subset={"table_id": _table_id("product_requirement_list")},
+    )
 
 
 @when(r"an actor queries product requirements in drill-down context")
@@ -654,6 +1001,81 @@ def when_cancel_association(context, cr_id, pr_id):
 @when(r'an actor queries column definitions of table "(?P<table_id>[^"]+)"')
 def when_query_table_column_definitions(context, table_id):
     _state(context)["last_query"]["column_definitions"] = table_id
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table": {
+            "id": str(_table_id(table_id)),
+            "project_id": str(_project_id("P1")),
+            "template_key": "project_tracking_view",
+            "table_name": table_id,
+            "version": 1,
+            "etag": "v1",
+        },
+        "columns": [
+            {
+                "id": str(_id(f"col:{table_id}:req")),
+                "key": "requirement",
+                "title": "需求",
+                "data_type": "text",
+                "is_fixed": True,
+                "order": 1,
+                "hidden": False,
+                "options": [],
+                "property": {},
+            },
+            {
+                "id": str(_id(f"col:{table_id}:design")),
+                "key": "design",
+                "title": "设计",
+                "data_type": "text",
+                "is_fixed": False,
+                "order": 2,
+                "hidden": False,
+                "options": [],
+                "property": {},
+            },
+            {
+                "id": str(_id(f"col:{table_id}:test")),
+                "key": "test",
+                "title": "测试",
+                "data_type": "text",
+                "is_fixed": False,
+                "order": 3,
+                "hidden": False,
+                "options": [],
+                "property": {},
+            },
+            {
+                "id": str(_id(f"col:{table_id}:start")),
+                "key": "planned_start",
+                "title": "预计开始",
+                "data_type": "date",
+                "is_fixed": False,
+                "order": 4,
+                "hidden": False,
+                "options": [],
+                "property": {},
+            },
+            {
+                "id": str(_id(f"col:{table_id}:end")),
+                "key": "planned_end",
+                "title": "预计结束",
+                "data_type": "date",
+                "is_fixed": False,
+                "order": 5,
+                "hidden": False,
+                "options": [],
+                "property": {},
+            },
+        ],
+        "rows": [],
+    }
+    _get(context, f"{API_SPREADSHEETS}/tables/{_table_id(table_id)}")
+    _remember_expected_dispatch(
+        context,
+        "get_table_view",
+        kind="query",
+        payload_subset={"table_id": _table_id(table_id)},
+    )
 
 
 @when(r'an actor queries summary projection for "(?P<cr_id>[^"]+)"')
@@ -678,16 +1100,64 @@ def when_query_tracking_statistics(context, cr_id):
     state = _state(context)
     state["last_query"]["tracking_stats"] = cr_id
     state["response"].setdefault(f"stats:{cr_id}", {"design": 1, "test": 1})
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table_id": str(_table_id("project_tracking")),
+        "row_count": 1,
+        "design_asset_count": 2,
+        "test_asset_count": 3,
+        "unlinked_design_asset_count": 0,
+        "unlinked_test_asset_count": 0,
+        "as_of_version": 1,
+    }
+    _get(context, f"{API_SPREADSHEETS}/tables/{_table_id('project_tracking')}/stats")
+    _remember_expected_dispatch(
+        context,
+        "get_table_stats",
+        kind="query",
+        payload_subset={"table_id": _table_id("project_tracking")},
+    )
 
 
 @when(r"an actor queries tracking statistics grouped by tags")
 def when_query_tracking_stats_by_tags(context):
     _state(context)["last_query"]["tracking_tags"] = True
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table_id": str(_table_id("project_tracking")),
+        "row_count": 1,
+        "design_asset_count": 2,
+        "test_asset_count": 1,
+        "unlinked_design_asset_count": 0,
+        "unlinked_test_asset_count": 0,
+        "as_of_version": 1,
+    }
+    _get(context, f"{API_SPREADSHEETS}/tables/{_table_id('project_tracking')}/stats")
+    _remember_expected_dispatch(
+        context,
+        "get_table_stats",
+        kind="query",
+        payload_subset={"table_id": _table_id("project_tracking")},
+    )
 
 
 @when(r"an actor queries project tracking summary cards")
 def when_query_project_tracking_summary_cards(context):
     _state(context)["last_query"]["tracking_summary_cards"] = True
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table_id": str(_table_id("project_tracking")),
+        "row_count": 1,
+        "design_asset_count": 2,
+        "test_asset_count": 1,
+        "unlinked_design_asset_count": 1,
+        "unlinked_test_asset_count": 0,
+        "as_of_version": 1,
+    }
+    _get(context, f"{API_SPREADSHEETS}/tables/{_table_id('project_tracking')}/stats")
+    _remember_expected_dispatch(
+        context,
+        "get_table_stats",
+        kind="query",
+        payload_subset={"table_id": _table_id("project_tracking")},
+    )
 
 
 @when(r'an actor creates asset file "(?P<filename>[^"]+)" for "(?P<pr_id>[^"]+)"')
@@ -713,6 +1183,9 @@ def when_update_file_content(context, filename):
         filename,
         {"project_id": "P1", "labels": set(), "follow": None, "detached": False},
     )["updated"] = True
+    _post(
+        context, f"{API_SPREADSHEETS}/assets/{_asset_id(filename)}/sync-from-parent", {}
+    )
 
 
 @when(r'the actor deletes file "(?P<filename>[^"]+)"')
@@ -772,11 +1245,43 @@ def when_detaches_from_follow(context, asset_id):
 @when(r'an actor queries asset statistics for customer requirement "(?P<cr_id>[^"]+)"')
 def when_query_asset_statistics_for_cr(context, cr_id):
     _state(context)["last_query"]["asset_stats_for"] = cr_id
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table_id": str(_table_id("project_tracking")),
+        "row_count": 1,
+        "design_asset_count": 1,
+        "test_asset_count": 1,
+        "unlinked_design_asset_count": 1,
+        "unlinked_test_asset_count": 0,
+        "as_of_version": 1,
+    }
+    _get(context, f"{API_SPREADSHEETS}/tables/{_table_id('project_tracking')}/stats")
+    _remember_expected_dispatch(
+        context,
+        "get_table_stats",
+        kind="query",
+        payload_subset={"table_id": _table_id("project_tracking")},
+    )
 
 
 @when(r"an actor queries requirement-asset statistics dashboard")
 def when_query_requirement_asset_statistics_dashboard(context):
     _state(context)["last_query"]["asset_dashboard"] = True
+    context.mocks.spreadsheet_query.execute.return_value = {
+        "table_id": str(_table_id("project_tracking")),
+        "row_count": 1,
+        "design_asset_count": 0,
+        "test_asset_count": 0,
+        "unlinked_design_asset_count": 2,
+        "unlinked_test_asset_count": 1,
+        "as_of_version": 1,
+    }
+    _get(context, f"{API_SPREADSHEETS}/tables/{_table_id('project_tracking')}/stats")
+    _remember_expected_dispatch(
+        context,
+        "get_table_stats",
+        kind="query",
+        payload_subset={"table_id": _table_id("project_tracking")},
+    )
 
 
 @when(r"an actor queries available status labels")
@@ -873,8 +1378,10 @@ def then_asset_independent_branch(context, asset_id):
 
 @then(r"the response includes the count of unbound assets")
 def then_response_includes_unbound_assets(context):
-    state = _state(context)
-    assert state["response"].get("unbound_assets", 0) >= 0
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    body = context.response.json()
+    assert body.get("unlinked_design_asset_count", 0) >= 0
 
 
 @then(r"the write is rejected with a version conflict")
@@ -953,6 +1460,10 @@ def then_view_stores_own_settings(context, view_id):
 
 @then(r'the response includes template "(?P<template_key>[^"]+)"')
 def then_response_includes_template(context, template_key):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    keys = {item["key"] for item in context.response.json()}
+    assert template_key in keys
     assert template_key in _state(context)["response"].get("templates", set())
 
 
@@ -965,6 +1476,8 @@ def then_both_templates_business_level(context):
 
 @then(r'a spreadsheet instance is created for project "(?P<project_id>[^"]+)"')
 def then_spreadsheet_instance_created_for_project(context, project_id):
+    _assert_pending_or_expected(context, HTTPStatus.ACCEPTED)
+    _assert_expected_dispatch_called(context)
     assert _state(context)["instantiated_templates"].get(project_id)
 
 
@@ -975,6 +1488,8 @@ def then_instance_contains_hierarchy_columns(context):
 
 @then(r'the table contains "(?P<l1>[^"]+)", "(?P<l2>[^"]+)", "(?P<l3>[^"]+)"')
 def then_table_contains_levels(context, l1, l2, l3):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
     expected = [l1, l2, l3]
     got = _state(context)["last_query"].get("hierarchy", ["L1", "L2", "L3"])
     assert got == expected
@@ -990,6 +1505,8 @@ def then_table_contains_hierarchy_range(context, start, end):
 
 @then(r'fields "(?P<f1>[^"]+)" and "(?P<f2>[^"]+)" are marked as fixed-left columns')
 def then_fields_fixed_left(context, f1, f2):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
     fixed = _state(context)["last_query"].get("fixed_left", set())
     assert f1 in fixed and f2 in fixed
 
@@ -1028,7 +1545,13 @@ def then_product_requirement_still_exists(context, pr_id):
 
 @then(r"the table contains columns (?P<columns>.+)")
 def then_table_contains_columns(context, columns):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
     expected = _quoted_csv(columns)
+    response_titles = [
+        item["title"] for item in context.response.json().get("columns", [])
+    ]
+    assert all(col in response_titles for col in expected)
     state = _state(context)
     table = state["tables"].get(_table_key("P1", "project_tracking"), {})
     if not table.get("columns"):
@@ -1040,6 +1563,10 @@ def then_table_contains_columns(context, columns):
 @then(r"the table supports schedule columns (?P<columns>.+)")
 def then_table_supports_schedule_columns(context, columns):
     expected = _quoted_csv(columns)
+    response_titles = [
+        item["title"] for item in context.response.json().get("columns", [])
+    ]
+    assert all(col in response_titles for col in expected)
     assert expected == ["预计开始", "预计结束"]
 
 
@@ -1064,6 +1591,10 @@ def then_target_query_scoped_by_cr(context, cr_id):
     r'the design count equals all design assets under "(?P<cr_id>[^"]+)" plus associated product requirements'
 )
 def then_design_count_matches_scope(context, cr_id):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    body = context.response.json()
+    assert body.get("design_asset_count", 0) >= 0
     assert _state(context)["response"].get(f"stats:{cr_id}", {}).get("design", 0) >= 0
 
 
@@ -1071,16 +1602,27 @@ def then_design_count_matches_scope(context, cr_id):
     r'the test count equals all test assets under "(?P<cr_id>[^"]+)" plus associated product requirements'
 )
 def then_test_count_matches_scope(context, cr_id):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    body = context.response.json()
+    assert body.get("test_asset_count", 0) >= 0
     assert _state(context)["response"].get(f"stats:{cr_id}", {}).get("test", 0) >= 0
 
 
 @then(r"the response includes per-tag counts in project context")
 def then_response_includes_tag_counts(context):
-    assert True
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    body = context.response.json()
+    assert "design_asset_count" in body and "test_asset_count" in body
 
 
 @then(r'the response includes count "(?P<counter>[^"]+)"')
 def then_response_includes_named_count(context, counter):
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    body = context.response.json()
+    assert "unlinked_design_asset_count" in body
     assert counter == "unassociated_assets"
 
 
@@ -1108,6 +1650,8 @@ def then_asset_retrievable_by_labels(context, asset_id):
 
 @then(r'the asset is created with project_id "(?P<project_id>[^"]+)"')
 def then_asset_created_with_project(context, project_id):
+    _assert_pending_or_expected(context, HTTPStatus.ACCEPTED)
+    _assert_expected_dispatch_called(context)
     assert any(
         asset.get("project_id") == project_id
         for asset in _state(context)["assets"].values()
@@ -1141,7 +1685,10 @@ def then_asset_counted_independently(context, asset_id):
 
 @then(r"the response includes independent count for unassociated assets")
 def then_response_includes_independent_unassociated_count(context):
-    assert True
+    _assert_pending_or_expected(context, HTTPStatus.OK)
+    _assert_expected_dispatch_called(context)
+    body = context.response.json()
+    assert body.get("unlinked_design_asset_count", 0) >= 0
 
 
 @then(r"labels include (?P<labels>.+)")

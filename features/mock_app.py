@@ -23,8 +23,12 @@ from app.application.commands.create_user import CreateUserInteractor
 from app.application.commands.deactivate_user import DeactivateUserInteractor
 from app.application.commands.grant_admin import GrantAdminInteractor
 from app.application.commands.revoke_admin import RevokeAdminInteractor
+from app.application.commands.spreadsheet_command import (
+    SpreadsheetCommandInteractor,
+)
 from app.application.commands.set_user_password import SetUserPasswordInteractor
 from app.application.queries.list_users import ListUsersQueryService
+from app.application.queries.spreadsheet_query import SpreadsheetQueryService
 from app.infrastructure.auth.handlers.change_password import ChangePasswordHandler
 from app.infrastructure.auth.handlers.log_in import LogInHandler
 from app.infrastructure.auth.handlers.log_out import LogOutHandler
@@ -54,9 +58,11 @@ class MockRegistry:
         self.grant_admin: AsyncMock = AsyncMock()
         self.revoke_admin: AsyncMock = AsyncMock()
         self.set_user_password: AsyncMock = AsyncMock()
+        self.spreadsheet_command: AsyncMock = AsyncMock()
 
         # Application queries
         self.list_users: AsyncMock = AsyncMock()
+        self.spreadsheet_query: AsyncMock = AsyncMock()
 
         # Infrastructure auth handlers
         self.sign_up: AsyncMock = AsyncMock()
@@ -103,8 +109,16 @@ class _MockProvider(Provider):
         return self._r.set_user_password  # type: ignore[return-value]
 
     @provide
+    def spreadsheet_command_interactor(self) -> SpreadsheetCommandInteractor:
+        return self._r.spreadsheet_command  # type: ignore[return-value]
+
+    @provide
     def list_users_query_service(self) -> ListUsersQueryService:
         return self._r.list_users  # type: ignore[return-value]
+
+    @provide
+    def spreadsheet_query_service(self) -> SpreadsheetQueryService:
+        return self._r.spreadsheet_query  # type: ignore[return-value]
 
     @provide
     def sign_up_handler(self) -> SignUpHandler:
