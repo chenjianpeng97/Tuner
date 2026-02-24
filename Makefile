@@ -1,6 +1,12 @@
 ## Convenience Makefile for running BDD scenarios
 
-.PHONY: bdd-ui-headful-smoke bdd-http-generic-smoke
+.PHONY: bdd-ui-headful-smoke bdd-http-generic-smoke sync.all
+
+# Sync all dependencies for the workspace root and all workspace members,
+# including every dependency group (e.g., backend dev/test, root bdd).
+sync.all:
+	@echo "Syncing all workspace dependencies and groups..."
+	@uv sync --all-packages --all-groups
 
 # Run the UI behave scenario in headed (non-headless) mode.
 # Usage:
