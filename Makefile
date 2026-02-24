@@ -1,6 +1,6 @@
-## Convenience Makefile for running BDD UI scenarios
+## Convenience Makefile for running BDD scenarios
 
-.PHONY: bdd-ui-headful
+.PHONY: bdd-ui-headful-smoke bdd-http-generic-smoke
 
 # Run the UI behave scenario in headed (non-headless) mode.
 # Usage:
@@ -15,3 +15,8 @@ bdd-ui-headful-smoke:
 	UI_BASE_URL=${UI_BASE_URL:http://127.0.0.1:5173} \
 	SCENARIO_NAME="${SCENARIO_NAME:Reject creating a user with a duplicate username}" \
 	uv run behave --stage ui ./features/user.feature --name "$$SCENARIO_NAME"
+
+# Run HTTP generic smoke scenario from demo module.
+bdd-http-generic-smoke:
+	@echo "Running HTTP generic component smoke..."
+	@uv run behave --stage http ./features/demo/generic_components_smoke.feature
