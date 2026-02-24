@@ -19,7 +19,7 @@ Sync Impact Report
 	- ⚠ pending: .specify/templates/commands/*.md (directory not present in repository)
 	- ✅ updated: README.md (onboarding reference to constitution)
 - Follow-up TODOs:
-	- TODO(RATIFICATION_DATE): Confirm original adoption date and replace placeholder note.
+	- None
 -->
 
 # Tuner Constitution
@@ -112,4 +112,4 @@ Review checklist (required for PR approval):
 - Operational guidance reference: onboarding and day-to-day workflow docs MUST point to this file
 	as the source of process truth.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): confirm original adoption date | **Last Amended**: 2026-02-24
+**Version**: 1.0.0 | **Ratified**: 2026-02-24 | **Last Amended**: 2026-02-24
