@@ -1,0 +1,352 @@
+openapi: 3.0.3
+info:
+  title: Spreadsheet Project Management Contract (Planning Draft)
+  version: 0.1.0
+  description: |
+    Planning-stage contract for phased delivery:
+    1) generic spreadsheet demo capability,
+    2) project-management preset extension.
+servers:
+  - url: /api/v1
+paths:
+  /projects/{project_id}/spreadsheets:
+    post:
+      summary: Create spreadsheet instance (generic or preset)
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSpreadsheetRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpreadsheetInstance'
+  /projects/{project_id}/spreadsheets/{spreadsheet_id}/rows:
+    post:
+      summary: Create row
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/SpreadsheetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRowRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RowResponse'
+    get:
+      summary: List rows with optional filters
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/SpreadsheetId'
+        - name: filter
+          in: query
+          schema:
+            type: string
+          description: Serialized filter expression for generic table fields
+      responses:
+        '200':
+          description: Row list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RowResponse'
+  /projects/{project_id}/spreadsheets/{spreadsheet_id}/cells:batch-upsert:
+    post:
+      summary: Upsert multiple cell values
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/SpreadsheetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operations:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/CellUpsert'
+      responses:
+        '200':
+          description: Per-cell write result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        row_id:
+                          type: string
+                        column_key:
+                          type: string
+                        status:
+                          type: string
+                        revision:
+                          type: integer
+  /projects/{project_id}/spreadsheets/{spreadsheet_id}/rows/{row_id}:
+    delete:
+      summary: Delete row
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/SpreadsheetId'
+        - $ref: '#/components/parameters/RowId'
+      responses:
+        '204':
+          description: Deleted
+  /projects/{project_id}/spreadsheets/{spreadsheet_id}/filters:apply:
+    post:
+      summary: Apply or clear filter conditions
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/SpreadsheetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyFilterRequest'
+      responses:
+        '200':
+          description: Filtered row list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RowResponse'
+
+  /projects/{project_id}/requirements/presets/project-tracking:instantiate:
+    post:
+      summary: Instantiate project-management preset table
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '201':
+          description: Preset instantiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpreadsheetInstance'
+  /projects/{project_id}/customer-requirements/{customer_requirement_id}/drilldown:
+    post:
+      summary: Enter product-requirement scoped context
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/CustomerRequirementId'
+      responses:
+        '200':
+          description: Scoped context available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer_requirement_id:
+                    type: string
+                  decomposition_allowed:
+                    type: boolean
+  /projects/{project_id}/customer-requirements/{customer_requirement_id}/product-requirements:
+    post:
+      summary: Create product requirement in scoped context
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/CustomerRequirementId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequirementRequest'
+      responses:
+        '201':
+          description: Product requirement created and linked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductRequirement'
+  /projects/{project_id}/requirements/statistics:
+    get:
+      summary: Query requirement and asset statistics
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - name: customer_requirement_id
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statistics response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementStatistics'
+
+components:
+  parameters:
+    ProjectId:
+      name: project_id
+      in: path
+      required: true
+      schema:
+        type: string
+    SpreadsheetId:
+      name: spreadsheet_id
+      in: path
+      required: true
+      schema:
+        type: string
+    RowId:
+      name: row_id
+      in: path
+      required: true
+      schema:
+        type: string
+    CustomerRequirementId:
+      name: customer_requirement_id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    CreateSpreadsheetRequest:
+      type: object
+      required: [name, mode]
+      properties:
+        name:
+          type: string
+        mode:
+          type: string
+          enum: [generic_demo, project_management_preset]
+        template_key:
+          type: string
+    SpreadsheetInstance:
+      type: object
+      properties:
+        id:
+          type: string
+        project_id:
+          type: string
+        name:
+          type: string
+        mode:
+          type: string
+        template_key:
+          type: string
+    CreateRowRequest:
+      type: object
+      properties:
+        initial_values:
+          type: object
+          additionalProperties: true
+    CellUpsert:
+      type: object
+      required: [row_id, column_key, value]
+      properties:
+        row_id:
+          type: string
+        column_key:
+          type: string
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: 'null'
+    ApplyFilterRequest:
+      type: object
+      properties:
+        clear:
+          type: boolean
+        conditions:
+          type: array
+          items:
+            type: object
+            properties:
+              column_key:
+                type: string
+              operator:
+                type: string
+              value:
+                oneOf:
+                  - type: string
+                  - type: number
+                  - type: boolean
+    RowResponse:
+      type: object
+      properties:
+        row_id:
+          type: string
+        values:
+          type: object
+          additionalProperties: true
+    CreateProductRequirementRequest:
+      type: object
+      required: [content]
+      properties:
+        module:
+          type: string
+        submodule:
+          type: string
+        level:
+          type: string
+        content:
+          type: string
+    ProductRequirement:
+      type: object
+      properties:
+        id:
+          type: string
+        project_id:
+          type: string
+        customer_requirement_id:
+          type: string
+        module:
+          type: string
+        submodule:
+          type: string
+        level:
+          type: string
+        content:
+          type: string
+    RequirementStatistics:
+      type: object
+      properties:
+        project_id:
+          type: string
+        customer_requirement_id:
+          type: string
+          nullable: true
+        total_assets:
+          type: integer
+        linked_assets:
+          type: integer
+        unlinked_assets:
+          type: integer
+        product_requirement_count:
+          type: integer

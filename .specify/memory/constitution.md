@@ -1,6 +1,6 @@
 <!--
 Sync Impact Report
-- Version change: template-initial → 1.0.0
+- Version change: 1.0.0 → 1.1.0
 - Modified principles:
 	- Placeholder Principle 1 → I. Requirements-to-Behavior Traceability
 	- Placeholder Principle 2 → II. Contract-First API & Typed Frontend Integration
@@ -49,6 +49,9 @@ Work MUST follow a test-first sequence at the appropriate stage: behavior scenar
 `behave --stage http` orchestration tests for controller/API behavior, UI-stage tests for frontend
 acceptance flows, and backend unit/integration tests for domain/application/infrastructure logic.
 Code MAY be merged only after applicable stage tests are green.
+Backend pytest placement MUST follow repository layering: unit tests in
+`backend/tests/app/unit/{domain,application,infrastructure,setup}`, integration tests in
+`backend/tests/app/integration`, and performance tests in `backend/tests/app/performance`.
 
 Rationale: The repository adopts BDD and clean-architecture TDD to validate behavior before
 implementation details.
@@ -58,6 +61,9 @@ Backend code MUST preserve domain, application, infrastructure, and presentation
 Business rules MUST live in domain/application layers, presentation MUST orchestrate without domain
 logic leakage, and infrastructure MUST implement ports without changing core business semantics.
 Cross-layer shortcuts that bypass ports or collapse boundaries MUST not be introduced.
+Application layer implementation MUST separate write operations into `application/commands/*`
+and read operations into `application/queries/*`; introducing new `application/use_cases/*`
+paths is not allowed.
 
 Rationale: Architectural boundaries are required for long-term maintainability, testability, and
 safe refactoring.
@@ -79,6 +85,10 @@ Rationale: Small verified increments reduce rollback risk and preserve an audita
 - New dependencies SHOULD be introduced only when existing stack capabilities are insufficient, and
 	the decision MUST be documented in the plan/research artifacts.
 - Generated files (e.g., OpenAPI-derived types) MUST be regenerated as part of contract changes.
+- Backend test files SHOULD be created under the matching layer folder first (domain/application/
+	infrastructure/setup) and only use integration tests for cross-boundary flows.
+- Backend application code MUST keep command/query split explicit in naming, file placement, and
+	DI wiring.
 
 ## Delivery Workflow & Quality Gates
 
@@ -112,4 +122,4 @@ Review checklist (required for PR approval):
 - Operational guidance reference: onboarding and day-to-day workflow docs MUST point to this file
 	as the source of process truth.
 
-**Version**: 1.0.0 | **Ratified**: 2026-02-24 | **Last Amended**: 2026-02-24
+**Version**: 1.1.0 | **Ratified**: 2026-02-24 | **Last Amended**: 2026-02-24
